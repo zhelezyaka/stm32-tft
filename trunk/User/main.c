@@ -2,6 +2,7 @@
 #include "lcd.h"
 #include "util.h"
 
+
 //STM32F103ZET6   -> ILI9325
 
 //PE0  -> LED
@@ -40,7 +41,7 @@ int main(void)
     initGPIO();  //初始化GPIO
     initFSMC();  //初始化FSMC总线
     lcdInit();   //初始化LCD
-    
+    lcdShowString(0, 0, "Hello World! My Name is LiHaifeng , I am glad to meet you o_O");
     //main loop
     while (1)
     {

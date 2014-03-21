@@ -1,6 +1,7 @@
 #include "stm32f10x.h"
 #include "lcd.h"
 #include "util.h"
+#include "fonts.h"
 
 void initGPIO(void)
 {
@@ -114,9 +115,9 @@ void lcdWriteRam(u16 rgbColor)
 {
     ili9325_RAM = rgbColor;
 }
-unsigned short lcdReadGRAM(unsigned short x,unsigned short y)
+unsigned short lcdReadGRAM(u16 x, u16 y)
 {
-    unsigned short temp;
+    u16 temp;
     lcdSetCursor(x, y);
     ili9325_REG = 0x22;
     /* dummy read */
@@ -128,9 +129,7 @@ unsigned short lcdReadGRAM(unsigned short x,unsigned short y)
 void lcdInit(void)
 {
     volatile unsigned int i;
-    u16 test;
     lcdReset();
-    lcdWriteReg(0x0000, 0x0001);
     sysTickDelay(150);	
     _deviceCode = lcdReadReg(0x0000);
     if (_deviceCode==0x9325||_deviceCode==0x9328)
@@ -205,7 +204,7 @@ void lcdInit(void)
     }
     lcdClear(COLOR_BLUE);
 }
-void lcdSetCursor(u16 x,u16 y)
+void lcdSetCursor(u16 x, u16 y)
 {
     lcdWriteReg(0x20, x); // 0-239
     lcdWriteReg(0x21, y); // 0-319
@@ -213,7 +212,6 @@ void lcdSetCursor(u16 x,u16 y)
 void lcdClear(u16 Color)
 {
     u32 index=0;
-    u16 t = 0x0000;
     lcdSetCursor(0,0);
     lcdWriteRamPrepare(); // Prepare to write GRAM
     for (index = 0; index < 76800; index++)
@@ -229,5 +227,58 @@ void lcdReset(void)
     GPIO_SetBits(GPIOF, GPIO_Pin_1 );		 	 
 	sysTickDelay(50);	
     GPIO_ResetBits(GPIOD, GPIO_Pin_7);            //CS=0 
+}
+
+void lcdSetColor(u16 color, u16 background)
+{
+    _color = color;
+    _background = background;
+}
+
+void lcdDrawChar(u32 x, u32 y, const u16 *c)
+{
+  u32 yOffset = 0;
+  int i = 0;
+    
+  //从0开始 逐行向下进行扫描
+  for(yOffset = 0; yOffset < FONT.Height; yOffset ++)
+  {
+    lcdSetCursor(x, y + yOffset);
+  	lcdWriteRamPrepare();
+    for(i = 0; i < FONT.Width; i++)    
+    {
+      if((c[yOffset] & (1 << i)) == 0x00) 
+        lcdWriteRam(_background);
+      else 
+        lcdWriteRam(_color);
+    }
+  }
+}
+
+void lcdShowChar(u32 ln, u32 col, u16 c)
+{
+    //参加font.h 空格第0个数组
+  c -= ' ';
+  lcdDrawChar(ln, col, &FONT.table[c * FONT.Height]);
+}
+
+void lcdShowString(u32 x, u32 y, const char *str)
+{
+    const char *pos = str;
+    while(*pos)
+    {
+        lcdShowChar(x, y, *pos);
+        pos ++;
+        if(x + FONT.Width > 222)
+        {
+            x = 0;
+            y += FONT.Height;
+        }
+        else
+        {
+            x += FONT.Width;
+        }
+        
+    }
 }
 
