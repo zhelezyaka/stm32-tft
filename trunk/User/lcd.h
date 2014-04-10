@@ -18,7 +18,7 @@
 //驱动Ic
 static u16 _deviceCode;
 
-static volatile u16 _color = COLOR_BLACK, _background = COLOR_BLUE;
+static volatile u16 _color = COLOR_RED, _background = COLOR_GREY;
 
 #define FONT  Font16x24
 
@@ -46,11 +46,15 @@ void lcdInit(void);
 void lcdReset(void);
 void lcdSetCursor(u16 x,u16 y);
 void lcdClear(u16 color);
+void lcdClearRect(u16 color, u16 x, u16 y, u16 w, u16 h);
 
 void lcdSetColor(u16 color, u16 background);
 void lcdDrawChar(u32 x, u32 y, const u16 *c);
+void lcdDrawCharArr(u32 x, u32 y, const u16 *c, u16 width, u16 height);
 void lcdShowChar(u32 ln, u32 col, u16 c);
 void lcdShowString(u32 x, u32 y, const char *str);
+
+void lcdDrawCursor(u32 x, u32 y);
 
 unsigned short lcdReadGRAM(u16 x,u16 y);
 

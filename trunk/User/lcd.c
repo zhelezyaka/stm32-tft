@@ -5,44 +5,44 @@
 
 void initGPIO(void)
 {
-    GPIO_InitTypeDef GPIO_InitStructure;
+    GPIO_InitTypeDef gpioSt;
   
     // RCC使能FSMC的时钟直接来自AHB时钟, 也就是HCLK, 中间没有分频. 控制位是RCC_AHBENR中的FSMCEN位
     RCC_AHBPeriphClockCmd(RCC_AHBPeriph_FSMC, ENABLE);
     // GPIO端口和AFIO端口时钟来自APB2, 也就是PCLK2, 控制位是RCC_APB2ERN中的IOPxEN 和AFIOEN位
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOE | RCC_APB2Periph_GPIOD, ENABLE); 
                              
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;              
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;         //LCD 背光控制
-    GPIO_Init(GPIOE, &GPIO_InitStructure);
+    gpioSt.GPIO_Mode = GPIO_Mode_Out_PP;
+    gpioSt.GPIO_Speed = GPIO_Speed_50MHz;              
+    gpioSt.GPIO_Pin = GPIO_Pin_0;         //LCD 背光控制
+    GPIO_Init(GPIOE, &gpioSt);
 
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1 ;        //LCD-RST
-    GPIO_Init(GPIOE, &GPIO_InitStructure);      
+    gpioSt.GPIO_Pin = GPIO_Pin_1 ;        //LCD-RST
+    GPIO_Init(GPIOE, &gpioSt);      
 
     // Set PD.00(D2), PD.01(D3), PD.04(NOE/RD), PD.05(NWE/WR), PD.08(D13), PD.09(D14),
     // PD.10(D15), PD.14(D0), PD.15(D1) as alternate function push pull      
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_4 | GPIO_Pin_5 |
+    gpioSt.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_4 | GPIO_Pin_5 |
                                 GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_14 | 
                                 GPIO_Pin_15;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-    GPIO_Init(GPIOD, &GPIO_InitStructure);
+    gpioSt.GPIO_Speed = GPIO_Speed_50MHz;
+    gpioSt.GPIO_Mode = GPIO_Mode_AF_PP;
+    GPIO_Init(GPIOD, &gpioSt);
 
     // Set PE.07(D4), PE.08(D5), PE.09(D6), PE.10(D7), PE.11(D8), PE.12(D9), PE.13(D10),
     // PE.14(D11), PE.15(D12) as alternate function push pull 
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | 
+    gpioSt.GPIO_Pin = GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | 
                                 GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | 
                                 GPIO_Pin_15;
-    GPIO_Init(GPIOE, &GPIO_InitStructure); 
+    GPIO_Init(GPIOE, &gpioSt); 
 
     // CS 为FSMC_NE1(PD7) 
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7; 
-    GPIO_Init(GPIOD, &GPIO_InitStructure);
+    gpioSt.GPIO_Pin = GPIO_Pin_7; 
+    GPIO_Init(GPIOD, &gpioSt);
 
     // RS 为FSMC_A16(PD11)
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11 ; 
-    GPIO_Init(GPIOD, &GPIO_InitStructure); 
+    gpioSt.GPIO_Pin = GPIO_Pin_11 ; 
+    GPIO_Init(GPIOD, &gpioSt); 
 
     GPIO_SetBits(GPIOD, GPIO_Pin_7);            //CS=1 
     GPIO_SetBits(GPIOD, GPIO_Pin_11);           //RS=1
@@ -202,7 +202,7 @@ void lcdInit(void)
         //display on sequence
         lcdWriteReg(0x0007, 0x0133); // 262K color and display ON
     }
-    lcdClear(COLOR_BLUE);
+    lcdClear(COLOR_GREY);
 }
 void lcdSetCursor(u16 x, u16 y)
 {
@@ -211,12 +211,28 @@ void lcdSetCursor(u16 x, u16 y)
 }
 void lcdClear(u16 Color)
 {
-    u32 index=0;
-    lcdSetCursor(0,0);
+    u32 index = 0;
+    lcdSetCursor(0, 0);
     lcdWriteRamPrepare(); // Prepare to write GRAM
     for (index = 0; index < 76800; index++)
     {
         ili9325_RAM = Color;
+    }
+}
+
+void lcdClearRect(u16 color, u16 x, u16 y, u16 w, u16 h)
+{
+    u32 i = 0;
+    u32 j = 0;
+    
+    for(j = 0; j < h; j ++)
+    {
+        lcdSetCursor(x , y + j);
+        lcdWriteRamPrepare(); // Prepare to write GRAM
+        for (i = 0; i < w; i ++)
+        {
+            ili9325_RAM = color;
+        }
     }
 }
 
@@ -237,15 +253,19 @@ void lcdSetColor(u16 color, u16 background)
 
 void lcdDrawChar(u32 x, u32 y, const u16 *c)
 {
+  lcdDrawCharArr(x, y, c, FONT.Width, FONT.Height);
+}
+void lcdDrawCharArr(u32 x, u32 y, const u16 *c, u16 width, u16 height)
+{
   u32 yOffset = 0;
   int i = 0;
     
   //从0开始 逐行向下进行扫描
-  for(yOffset = 0; yOffset < FONT.Height; yOffset ++)
+  for(yOffset = 0; yOffset < height; yOffset ++)
   {
     lcdSetCursor(x, y + yOffset);
   	lcdWriteRamPrepare();
-    for(i = 0; i < FONT.Width; i++)    
+    for(i = 0; i < width; i++)    
     {
       if((c[yOffset] & (1 << i)) == 0x00) 
         lcdWriteRam(_background);
@@ -254,7 +274,6 @@ void lcdDrawChar(u32 x, u32 y, const u16 *c)
     }
   }
 }
-
 void lcdShowChar(u32 ln, u32 col, u16 c)
 {
     //参加font.h 空格第0个数组
@@ -280,5 +299,12 @@ void lcdShowString(u32 x, u32 y, const char *str)
         }
         
     }
+}
+
+void lcdDrawCursor(u32 x, u32 y)
+{
+    lcdSetCursor(x, y);
+    lcdWriteRamPrepare();
+    lcdWriteRam(COLOR_GREEN);
 }
 
