@@ -55,3 +55,16 @@ int fputc(int c, FILE *stream)
 {
    return ITM_SendChar(c);
 }
+
+/**
+  * @brief  Inserts a delay time.
+  * @param  nCount: specifies the delay time length.
+  * @retval None
+  */
+void delay(vu32 nCount)
+{
+  vu32 index = 0; 
+  for(index = (34000 * nCount); index != 0; index--)
+  {
+  }
+}
