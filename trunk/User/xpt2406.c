@@ -1,7 +1,7 @@
-#include "touch.h"
+#include "xpt2406.h"
 #include "stm32f10x.h"
 #include "util.h"
-#include "lcd.h"
+#include "ili9325.h"
 
 //SPI1_NSS  [PA4] -> T_CS
 //SPI1_SCK  [PA5] -> T_CLK
@@ -92,7 +92,7 @@ void initExti(void)
 void EXTI3_IRQHandler(void)
 {
     uint16_t x = 0, y = 0, xAd = 0, yAd = 0;
-    char chArr[10];
+    //char chArr[10];
 	if(EXTI_GetITStatus(EXTI_Line3)!= RESET)
     {
         //lcdClear(COLOR_BLUE);
@@ -102,7 +102,7 @@ void EXTI3_IRQHandler(void)
         //lcdShowString(0, 0, chArr);
         //itoa(y, chArr, 10);
         //lcdShowString(0, 25, chArr);
-        lcdDrawCursor(x, y);
+        //lcdDrawCursor(x, y);
     }
 	EXTI_ClearITPendingBit(EXTI_Line3);
 }

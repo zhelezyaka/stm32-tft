@@ -1,0 +1,1177 @@
+#include "stm32f10x.h"
+#include "ili9325.h"
+#include "reg.h"
+#include "util.h"
+#include "fonts.h"
+
+#define MAX_POLY_CORNERS   200
+#define POLY_Y(Z)          ((int32_t)((Points + Z)->X))
+#define POLY_X(Z)          ((int32_t)((Points + Z)->Y))  
+
+
+static sFONT *lcdCurrentfonts;
+/* Global variables to set the written text color */
+static  __IO uint16_t TextColor = 0x0000, BackColor = 0xFFFF;
+
+
+static void PutPixel(int16_t x, int16_t y);
+static void lcdPolyLineRelativeClosed(pPoint Points, uint16_t PointCount, uint16_t Closed);
+
+/**
+  * @brief  DeInitializes the LCD.
+  * @param  None
+  * @retval None
+  */
+void lcdDeInit(void)
+{ 
+    GPIO_InitTypeDef GPIO_InitStructure;
+
+    /*!< LCD Display Off */
+    lcdDisplayOff();
+
+    /* BANK 1 (of NOR/SRAM Bank 1~4) is disabled */
+    FSMC_NORSRAMCmd(FSMC_Bank1_NORSRAM1, ENABLE);
+
+    /*!< LCD_SPI DeInit */
+    FSMC_NORSRAMDeInit(FSMC_Bank1_NORSRAM1);
+
+    /* Set PD.00(D2), PD.01(D3), PD.04(NOE), PD.05(NWE), PD.08(D13), PD.09(D14),
+     PD.10(D15), PD.14(D0), PD.15(D1) as input floating */
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_4 | GPIO_Pin_5 |
+                                GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_14 | 
+                                GPIO_Pin_15;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+    GPIO_Init(GPIOD, &GPIO_InitStructure);
+    /* Set PE.07(D4), PE.08(D5), PE.09(D6), PE.10(D7), PE.11(D8), PE.12(D9), PE.13(D10),
+     PE.14(D11), PE.15(D12) as alternate function push pull */
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | 
+                                GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | 
+                                GPIO_Pin_15;
+    GPIO_Init(GPIOE, &GPIO_InitStructure);
+    /* Set PD.11(A0 (RS)) as alternate function push pull */
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;
+    GPIO_Init(GPIOD, &GPIO_InitStructure);
+    /* Set PD.7(NE1 (LCD/CS)) as alternate function push pull - CE3(LCD /CS) */
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;
+    GPIO_Init(GPIOD, &GPIO_InitStructure); 
+}
+
+
+/**
+  * @brief  Initializes the LCD.
+  * @param  None
+  * @retval None
+  */
+void ili9325_lcdInit(void)
+{ 
+    __IO uint32_t lcdid = 0;
+  
+    /* Configure the LCD Control pins --------------------------------------------*/
+    lcdCtrlLinesConfig();
+    /* Configure the FSMC Parallel interface -------------------------------------*/
+    lcdFSMCConfig();
+  
+    _delay_(5); /* delay 50 ms */
+    lcdReset();
+    /* Read the LCD ID */
+    lcdid = lcdReadReg(0x00);
+  
+    if(lcdid == 0x9325 || lcdid == 0x9328) /* Check if the LCD is ILI9325 Controller */
+    {
+        /* Start Initial Sequence ------------------------------------------------*/
+        lcdWriteReg(LCD_REG_0, 0x0001);  /* Start internal OSC. */
+        lcdWriteReg(LCD_REG_1, 0x0100);  /* Set SS and SM bit */
+        lcdWriteReg(LCD_REG_2, 0x0700);  /* Set 1 line inversion */
+        lcdWriteReg(LCD_REG_3, 0x1018);  /* Set GRAM write direction and BGR=1. */
+        lcdWriteReg(LCD_REG_4, 0x0000);  /* Resize register */
+        lcdWriteReg(LCD_REG_8, 0x0202);  /* Set the back porch and front porch */
+        lcdWriteReg(LCD_REG_9, 0x0000);  /* Set non-display area refresh cycle ISC[3:0] */
+        lcdWriteReg(LCD_REG_10, 0x0000); /* FMARK function */
+        lcdWriteReg(LCD_REG_12, 0x0000); /* RGB interface setting */
+        lcdWriteReg(LCD_REG_13, 0x0000); /* Frame marker Position */
+        lcdWriteReg(LCD_REG_15, 0x0000); /* RGB interface polarity */
+
+        /* Power On sequence -----------------------------------------------------*/
+        lcdWriteReg(LCD_REG_16, 0x0000); /* SAP, BT[3:0], AP, DSTB, SLP, STB */
+        lcdWriteReg(LCD_REG_17, 0x0000); /* DC1[2:0], DC0[2:0], VC[2:0] */
+        lcdWriteReg(LCD_REG_18, 0x0000); /* VREG1OUT voltage */
+        lcdWriteReg(LCD_REG_19, 0x0000); /* VDV[4:0] for VCOM amplitude */
+        _delay_(20);                     /* Dis-charge capacitor power voltage (200ms) */
+        lcdWriteReg(LCD_REG_16, 0x17B0); /* SAP, BT[3:0], AP, DSTB, SLP, STB */
+        lcdWriteReg(LCD_REG_17, 0x0137); /* DC1[2:0], DC0[2:0], VC[2:0] */
+        _delay_(5);                      /* Delay 50 ms */
+        lcdWriteReg(LCD_REG_18, 0x0139); /* VREG1OUT voltage */
+        _delay_(5);                      /* Delay 50 ms */
+        lcdWriteReg(LCD_REG_19, 0x1d00); /* VDV[4:0] for VCOM amplitude */
+        lcdWriteReg(LCD_REG_41, 0x0013); /* VCM[4:0] for VCOMH */
+        _delay_(5);                      /* Delay 50 ms */
+        lcdWriteReg(LCD_REG_32, 0x0000); /* GRAM horizontal Address */
+        lcdWriteReg(LCD_REG_33, 0x0000); /* GRAM Vertical Address */
+
+        /* Adjust the Gamma Curve (ILI9325)---------------------------------------*/
+        lcdWriteReg(LCD_REG_48, 0x0007);
+        lcdWriteReg(LCD_REG_49, 0x0302);
+        lcdWriteReg(LCD_REG_50, 0x0105);
+        lcdWriteReg(LCD_REG_53, 0x0206);
+        lcdWriteReg(LCD_REG_54, 0x0808);
+        lcdWriteReg(LCD_REG_55, 0x0206);
+        lcdWriteReg(LCD_REG_56, 0x0504);
+        lcdWriteReg(LCD_REG_57, 0x0007);
+        lcdWriteReg(LCD_REG_60, 0x0105);
+        lcdWriteReg(LCD_REG_61, 0x0808);
+
+        /* Set GRAM area ---------------------------------------------------------*/
+        lcdWriteReg(LCD_REG_80, 0x0000); /* Horizontal GRAM Start Address */
+        lcdWriteReg(LCD_REG_81, 0x00EF); /* Horizontal GRAM End Address */
+        lcdWriteReg(LCD_REG_82, 0x0000); /* Vertical GRAM Start Address */
+        lcdWriteReg(LCD_REG_83, 0x013F); /* Vertical GRAM End Address */
+
+        lcdWriteReg(LCD_REG_96,  0xA700); /* Gate Scan Line(GS=1, scan direction is G320~G1) */
+        lcdWriteReg(LCD_REG_97,  0x0001); /* NDL,VLE, REV */
+        lcdWriteReg(LCD_REG_106, 0x0000); /* set scrolling line */
+
+        /* Partial Display Control -----------------------------------------------*/
+        lcdWriteReg(LCD_REG_128, 0x0000);
+        lcdWriteReg(LCD_REG_129, 0x0000);
+        lcdWriteReg(LCD_REG_130, 0x0000);
+        lcdWriteReg(LCD_REG_131, 0x0000);
+        lcdWriteReg(LCD_REG_132, 0x0000);
+        lcdWriteReg(LCD_REG_133, 0x0000);
+
+        /* Panel Control ---------------------------------------------------------*/
+        lcdWriteReg(LCD_REG_144, 0x0010);
+        lcdWriteReg(LCD_REG_146, 0x0000);
+        lcdWriteReg(LCD_REG_147, 0x0003);
+        lcdWriteReg(LCD_REG_149, 0x0110);
+        lcdWriteReg(LCD_REG_151, 0x0000);
+        lcdWriteReg(LCD_REG_152, 0x0000);
+
+        /* set GRAM write direction and BGR = 1 */
+        /* I/D=00 (Horizontal : increment, Vertical : decrement) */
+        /* AM=1 (address is updated in vertical writing direction) */
+        lcdWriteReg(LCD_REG_3, 0x1018);
+
+        lcdWriteReg(LCD_REG_7, 0x0133); /* 262K color and display ON */
+        lcdSetFont(&LCD_DEFAULT_FONT);
+    }
+}
+
+/**
+  * @brief  Sets the LCD Text and Background colors.
+  * @param  _TextColor: specifies the Text Color.
+  * @param  _BackColor: specifies the Background Color.
+  * @retval None
+  */
+void lcdSetColors(__IO uint16_t _TextColor, __IO uint16_t _BackColor)
+{
+    TextColor = _TextColor; 
+    BackColor = _BackColor;
+}
+
+/**
+  * @brief  Gets the LCD Text and Background colors.
+  * @param  _TextColor: pointer to the variable that will contain the Text 
+            Color.
+  * @param  _BackColor: pointer to the variable that will contain the Background 
+            Color.
+  * @retval None
+  */
+void lcdGetColors(__IO uint16_t *_TextColor, __IO uint16_t *_BackColor)
+{
+    *_TextColor = TextColor; *_BackColor = BackColor;
+}
+
+/**
+  * @brief  Sets the Text color.
+  * @param  Color: specifies the Text color code RGB(5-6-5).
+  * @retval None
+  */
+void lcdSetTextColor(__IO uint16_t Color)
+{
+    TextColor = Color;
+}
+
+/**
+  * @brief  Sets the Background color.
+  * @param  Color: specifies the Background color code RGB(5-6-5).
+  * @retval None
+  */
+void lcdSetBackColor(__IO uint16_t Color)
+{
+    BackColor = Color;
+}
+
+/**
+  * @brief  Sets the Text Font.
+  * @param  fonts: specifies the font to be used.
+  * @retval None
+  */
+void lcdSetFont(sFONT *fonts)
+{
+    lcdCurrentfonts = fonts;
+}
+
+/**
+  * @brief  Gets the Text Font.
+  * @param  None.
+  * @retval the used font.
+  */
+sFONT *lcdGetFont(void)
+{
+    return lcdCurrentfonts;
+}
+
+/**
+  * @brief  Clears the selected line.
+  * @param  Line: the Line to be cleared.
+  *   This parameter can be one of the following values:
+  *     @arg Linex: where x can be 0..n
+  * @retval None
+  */
+void lcdClearLine(uint8_t Line)
+{
+    uint16_t refcolumn = LCD_PIXEL_WIDTH - 1;
+    /* Send the string character by character on lCD */
+    while (((refcolumn + 1)&0xFFFF) >= lcdCurrentfonts->Width)
+    {
+        /* Display one character on LCD */
+        lcdDisplayChar(Line, refcolumn, ' ');
+        /* Decrement the column position by 16 */
+        refcolumn -= lcdCurrentfonts->Width;
+    }
+}
+
+/**
+  * @brief  Clears the hole LCD.
+  * @param  Color: the color of the background.
+  * @retval None
+  */
+void lcdClear(uint16_t Color)
+{
+    uint32_t index = 0;
+
+    lcdSetCursor(0x00, 0x013F); 
+    lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
+    for(index = 0; index < 76800; index++)
+    {
+        ili9325_RAM = Color;
+    }  
+}
+
+/**
+  * @brief  Sets the cursor position.
+  * @param  Xpos: specifies the X position.
+  * @param  Ypos: specifies the Y position. 
+  * @retval None
+  */
+void lcdSetCursor(uint8_t Xpos, uint16_t Ypos)
+{
+    lcdWriteReg(LCD_REG_32, Xpos);
+    lcdWriteReg(LCD_REG_33, Ypos);
+}
+
+/**
+  * @brief  Draws a character on LCD.
+  * @param  Xpos: the Line where to display the character shape.
+  * @param  Ypos: start column address.
+  * @param  c: pointer to the character data.
+  * @retval None
+  */
+void lcdDrawChar(uint8_t Xpos, uint16_t Ypos, const uint16_t *c)
+{
+    uint32_t index = 0, i = 0;
+    uint8_t Xaddress = 0;
+
+    Xaddress = Xpos;
+
+    lcdSetCursor(Xaddress, Ypos);
+  
+    for(index = 0; index < lcdCurrentfonts->Height; index++)
+    {
+        lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
+        for(i = 0; i < lcdCurrentfonts->Width; i++)
+        {
+            if((((c[index] & ((0x80 << ((lcdCurrentfonts->Width / 12 ) * 8 ) ) >> i)) == 0x00) &&(lcdCurrentfonts->Width <= 12))||
+            (((c[index] & (0x1 << i)) == 0x00)&&(lcdCurrentfonts->Width > 12 )))
+
+            {
+                lcdWriteRAM(BackColor);
+            }
+            else
+            {
+                lcdWriteRAM(TextColor);
+            }
+        }
+        Xaddress++;
+        lcdSetCursor(Xaddress, Ypos);
+    }
+}
+
+/**
+  * @brief  Displays one character (16dots width, 24dots height).
+  * @param  Line: the Line where to display the character shape .
+  *   This parameter can be one of the following values:
+  *     @arg Linex: where x can be 0..9
+  * @param  Column: start column address.
+  * @param  Ascii: character ascii code, must be between 0x20 and 0x7E.
+  * @retval None
+  */
+void lcdDisplayChar(uint8_t Line, uint16_t Column, uint8_t Ascii)
+{
+    Ascii -= 32;
+    lcdDrawChar(Line, Column, &lcdCurrentfonts->table[Ascii * lcdCurrentfonts->Height]);
+}
+
+/**
+  * @brief  Displays a maximum of 20 char on the LCD.
+  * @param  Line: the Line where to display the character shape .
+  *   This parameter can be one of the following values:
+  *     @arg Linex: where x can be 0..9
+  * @param  *ptr: pointer to string to display on LCD.
+  * @retval None
+  */
+void lcdDisplayStringLine(uint8_t Line, uint8_t *ptr)
+{
+    uint16_t refcolumn = LCD_PIXEL_WIDTH - 1;
+
+  /* Send the string character by character on lCD */
+    while ((*ptr != 0) & (((refcolumn + 1) & 0xFFFF) >= lcdCurrentfonts->Width))
+    {
+        /* Display one character on LCD */
+        lcdDisplayChar(Line, refcolumn, *ptr);
+        /* Decrement the column position by 16 */
+        refcolumn -= lcdCurrentfonts->Width;
+        /* Point on the next character */
+        ptr++;
+    }
+}
+
+/**
+  * @brief  Sets a display window
+  * @param  Xpos: specifies the X buttom left position.
+  * @param  Ypos: specifies the Y buttom left position.
+  * @param  Height: display window height.
+  * @param  Width: display window width.
+  * @retval None
+  */
+void lcdSetDisplayWindow(uint8_t Xpos, uint16_t Ypos, uint8_t Height, uint16_t Width)
+{
+    /* Horizontal GRAM Start Address */
+    if(Xpos >= Height)
+    {
+        lcdWriteReg(LCD_REG_80, (Xpos - Height + 1));
+    }
+    else
+    {
+        lcdWriteReg(LCD_REG_80, 0);
+    }
+    /* Horizontal GRAM End Address */
+    lcdWriteReg(LCD_REG_81, Xpos);
+    /* Vertical GRAM Start Address */
+    if(Ypos >= Width)
+    {
+        lcdWriteReg(LCD_REG_82, (Ypos - Width + 1));
+    }  
+    else
+    {
+        lcdWriteReg(LCD_REG_82, 0);
+    }
+    /* Vertical GRAM End Address */
+    lcdWriteReg(LCD_REG_83, Ypos);
+    lcdSetCursor(Xpos, Ypos);
+}
+
+/**
+  * @brief  Disables LCD Window mode.
+  * @param  None
+  * @retval None
+  */
+void lcdWindowModeDisable(void)
+{
+    lcdSetDisplayWindow(239, 0x13F, 240, 320);
+    lcdWriteReg(LCD_REG_3, 0x1018);    
+}
+
+/**
+  * @brief  Displays a line.
+  * @param Xpos: specifies the X position.
+  * @param Ypos: specifies the Y position.
+  * @param Length: line length.
+  * @param Direction: line direction.
+  *   This parameter can be one of the following values: Vertical or Horizontal.
+  * @retval None
+  */
+void lcdDrawLine(uint8_t Xpos, uint16_t Ypos, uint16_t Length, uint8_t Direction)
+{
+    uint32_t i = 0;
+
+    lcdSetCursor(Xpos, Ypos);
+    if(Direction == LCD_DIR_HORIZONTAL)
+    {
+        lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
+        for(i = 0; i < Length; i++)
+        {
+            lcdWriteRAM(TextColor);
+        }
+    }
+    else
+    {
+        for(i = 0; i < Length; i++)
+        {
+            lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
+            lcdWriteRAM(TextColor);
+            Xpos++;
+            lcdSetCursor(Xpos, Ypos);
+        }
+        }
+    }
+
+/**
+  * @brief  Displays a rectangle.
+  * @param  Xpos: specifies the X position.
+  * @param  Ypos: specifies the Y position.
+  * @param  Height: display rectangle height.
+  * @param  Width: display rectangle width.
+  * @retval None
+  */
+void lcdDrawRect(uint8_t Xpos, uint16_t Ypos, uint8_t Height, uint16_t Width)
+{
+    lcdDrawLine(Xpos, Ypos, Width, LCD_DIR_HORIZONTAL);
+    lcdDrawLine((Xpos + Height), Ypos, Width, LCD_DIR_HORIZONTAL);
+
+    lcdDrawLine(Xpos, Ypos, Height, LCD_DIR_VERTICAL);
+    lcdDrawLine(Xpos, (Ypos - Width + 1), Height, LCD_DIR_VERTICAL);
+}
+
+/**
+  * @brief  Displays a circle.
+  * @param  Xpos: specifies the X position.
+  * @param  Ypos: specifies the Y position.
+  * @param  Radius
+  * @retval None
+  */
+void lcdDrawCircle(uint8_t Xpos, uint16_t Ypos, uint16_t Radius)
+{
+    int32_t  D;/* Decision Variable */ 
+    uint32_t  CurX;/* Current X Value */
+    uint32_t  CurY;/* Current Y Value */ 
+
+    D = 3 - (Radius << 1);
+    CurX = 0;
+    CurY = Radius;
+
+    while (CurX <= CurY)
+    {
+        lcdSetCursor(Xpos + CurX, Ypos + CurY);
+        lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
+        lcdWriteRAM(TextColor);
+        lcdSetCursor(Xpos + CurX, Ypos - CurY);
+        lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
+        lcdWriteRAM(TextColor);
+        lcdSetCursor(Xpos - CurX, Ypos + CurY);
+        lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
+        lcdWriteRAM(TextColor);
+        lcdSetCursor(Xpos - CurX, Ypos - CurY);
+        lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
+        lcdWriteRAM(TextColor);
+        lcdSetCursor(Xpos + CurY, Ypos + CurX);
+        lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
+        lcdWriteRAM(TextColor);
+        lcdSetCursor(Xpos + CurY, Ypos - CurX);
+        lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
+        lcdWriteRAM(TextColor);
+        lcdSetCursor(Xpos - CurY, Ypos + CurX);
+        lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
+        lcdWriteRAM(TextColor);
+        lcdSetCursor(Xpos - CurY, Ypos - CurX);
+        lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
+        lcdWriteRAM(TextColor);
+        if (D < 0)
+        { 
+            D += (CurX << 2) + 6;
+        }
+        else
+        {
+            D += ((CurX - CurY) << 2) + 10;
+            CurY--;
+        }
+        CurX++;
+    }
+}
+
+/**
+  * @brief  Displays a monocolor picture.
+  * @param  Pict: pointer to the picture array.
+  * @retval None
+  */
+void lcdDrawMonoPict(const uint32_t *Pict)
+{
+    uint32_t index = 0, i = 0;
+    lcdSetCursor(0, (LCD_PIXEL_WIDTH - 1));
+    lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
+    for(index = 0; index < 2400; index++)
+    {
+        for(i = 0; i < 32; i++)
+        {
+            if((Pict[index] & (1 << i)) == 0x00)
+            {
+                lcdWriteRAM(BackColor);
+            }
+            else
+            {
+                lcdWriteRAM(TextColor);
+            }
+        }
+  }
+}
+
+/**
+  * @brief  Displays a bitmap picture loaded in the internal Flash.
+  * @param  BmpAddress: Bmp picture address in the internal Flash.
+  * @retval None
+  */
+void lcdWriteBMP(uint32_t BmpAddress)
+{
+    uint32_t index = 0, size = 0;
+    /* Read bitmap size */
+    size = *(__IO uint16_t *) (BmpAddress + 2);
+    size |= (*(__IO uint16_t *) (BmpAddress + 4)) << 16;
+    /* Get bitmap data address offset */
+    index = *(__IO uint16_t *) (BmpAddress + 10);
+    index |= (*(__IO uint16_t *) (BmpAddress + 12)) << 16;
+    size = (size - index)/2;
+    BmpAddress += index;
+    /* Set GRAM write direction and BGR = 1 */
+    /* I/D=00 (Horizontal : decrement, Vertical : decrement) */
+    /* AM=1 (address is updated in vertical writing direction) */
+    lcdWriteReg(LCD_REG_3, 0x1008);
+
+    lcdWriteRAM_Prepare();
+ 
+    for(index = 0; index < size; index++)
+    {
+        lcdWriteRAM(*(__IO uint16_t *)BmpAddress);
+        BmpAddress += 2;
+    }
+ 
+    /* Set GRAM write direction and BGR = 1 */
+    /* I/D = 01 (Horizontal : increment, Vertical : decrement) */
+    /* AM = 1 (address is updated in vertical writing direction) */
+    lcdWriteReg(LCD_REG_3, 0x1018);
+}
+
+/**
+  * @brief  Displays a full rectangle.
+  * @param  Xpos: specifies the X position.
+  * @param  Ypos: specifies the Y position.
+  * @param  Height: rectangle height.
+  * @param  Width: rectangle width.
+  * @retval None
+  */
+void lcdDrawFullRect(uint16_t Xpos, uint16_t Ypos, uint16_t Width, uint16_t Height)
+{
+    lcdSetTextColor(TextColor);
+
+    lcdDrawLine(Xpos, Ypos, Width, LCD_DIR_HORIZONTAL);
+    lcdDrawLine((Xpos + Height), Ypos, Width, LCD_DIR_HORIZONTAL);
+
+    lcdDrawLine(Xpos, Ypos, Height, LCD_DIR_VERTICAL);
+    lcdDrawLine(Xpos, (Ypos - Width + 1), Height, LCD_DIR_VERTICAL);
+
+    Width -= 2;
+    Height--;
+    Ypos--;
+
+    lcdSetTextColor(BackColor);
+
+    while(Height--)
+    {
+        lcdDrawLine(++Xpos, Ypos, Width, LCD_DIR_HORIZONTAL);    
+    }
+
+    lcdSetTextColor(TextColor);
+}
+
+/**
+  * @brief  Displays a full circle.
+  * @param  Xpos: specifies the X position.
+  * @param  Ypos: specifies the Y position.
+  * @param  Radius
+  * @retval None
+  */
+void lcdDrawFullCircle(uint16_t Xpos, uint16_t Ypos, uint16_t Radius)
+{
+    int32_t  D;    /* Decision Variable */ 
+    uint32_t  CurX;/* Current X Value */
+    uint32_t  CurY;/* Current Y Value */ 
+
+    D = 3 - (Radius << 1);
+
+    CurX = 0;
+    CurY = Radius;
+
+    lcdSetTextColor(BackColor);
+
+    while (CurX <= CurY)
+    {
+        if(CurY > 0) 
+        {
+            lcdDrawLine(Xpos - CurX, Ypos + CurY, 2*CurY, LCD_DIR_HORIZONTAL);
+            lcdDrawLine(Xpos + CurX, Ypos + CurY, 2*CurY, LCD_DIR_HORIZONTAL);
+        }
+
+        if(CurX > 0) 
+        {
+            lcdDrawLine(Xpos - CurY, Ypos + CurX, 2*CurX, LCD_DIR_HORIZONTAL);
+            lcdDrawLine(Xpos + CurY, Ypos + CurX, 2*CurX, LCD_DIR_HORIZONTAL);
+        }
+        if (D < 0)
+        { 
+            D += (CurX << 2) + 6;
+        }
+        else
+        {
+            D += ((CurX - CurY) << 2) + 10;
+            CurY--;
+        }
+        CurX++;
+    }
+
+    lcdSetTextColor(TextColor);
+    lcdDrawCircle(Xpos, Ypos, Radius);
+}
+
+/**
+  * @brief  Displays an uni line (between two points).
+  * @param  x1: specifies the point 1 x position.
+  * @param  y1: specifies the point 1 y position.
+  * @param  x2: specifies the point 2 x position.
+  * @param  y2: specifies the point 2 y position.
+  * @retval None
+  */
+void lcdDrawUniLine(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
+{
+    int16_t deltax = 0, deltay = 0, x = 0, y = 0, xinc1 = 0, xinc2 = 0, 
+    yinc1 = 0, yinc2 = 0, den = 0, num = 0, numadd = 0, numpixels = 0, 
+    curpixel = 0;
+
+    deltax = ABS(x2 - x1);        /* The difference between the x's */
+    deltay = ABS(y2 - y1);        /* The difference between the y's */
+    x = x1;                       /* Start x off at the first pixel */
+    y = y1;                       /* Start y off at the first pixel */
+
+    if (x2 >= x1)                 /* The x-values are increasing */
+    {
+        xinc1 = 1;
+        xinc2 = 1;
+    }
+    else                          /* The x-values are decreasing */
+    {
+        xinc1 = -1;
+        xinc2 = -1;
+    }
+
+    if (y2 >= y1)                 /* The y-values are increasing */
+    {
+        yinc1 = 1;
+        yinc2 = 1;
+    }
+    else                          /* The y-values are decreasing */
+    {
+        yinc1 = -1;
+        yinc2 = -1;
+    }
+
+    if (deltax >= deltay)           /* There is at least one x-value for every y-value */
+    {
+        xinc1 = 0;                  /* Don't change the x when numerator >= denominator */
+        yinc2 = 0;                  /* Don't change the y for every iteration */
+        den = deltax;
+        num = deltax / 2;
+        numadd = deltay;
+        numpixels = deltax;         /* There are more x-values than y-values */
+    }
+    else                            /* There is at least one y-value for every x-value */
+    {
+        xinc2 = 0;                  /* Don't change the x for every iteration */
+        yinc1 = 0;                  /* Don't change the y when numerator >= denominator */
+        den = deltay;
+        num = deltay / 2;
+        numadd = deltax;
+        numpixels = deltay;         /* There are more y-values than x-values */
+    }
+
+    for (curpixel = 0; curpixel <= numpixels; curpixel++)
+    {
+        PutPixel(x, y);             /* Draw the current pixel */
+        num += numadd;              /* Increase the numerator by the top of the fraction */
+        if (num >= den)             /* Check if numerator >= denominator */
+        {
+            num -= den;             /* Calculate the new numerator value */
+            x += xinc1;             /* Change the x as appropriate */
+            y += yinc1;             /* Change the y as appropriate */
+        }
+        x += xinc2;                 /* Change the x as appropriate */
+        y += yinc2;                 /* Change the y as appropriate */
+    }
+}
+
+/**
+  * @brief  Displays an polyline (between many points).
+  * @param  Points: pointer to the points array.
+  * @param  PointCount: Number of points.
+  * @retval None
+  */
+void lcdPolyLine(pPoint Points, uint16_t PointCount)
+{
+    int16_t X = 0, Y = 0;
+
+    if(PointCount < 2)
+    {
+        return;
+    }
+
+    while(--PointCount)
+    {
+        X = Points->X;
+        Y = Points->Y;
+        Points++;
+        lcdDrawUniLine(X, Y, Points->X, Points->Y);
+    }
+}
+
+/**
+  * @brief  Displays an relative polyline (between many points).
+  * @param  Points: pointer to the points array.
+  * @param  PointCount: Number of points.
+  * @param  Closed: specifies if the draw is closed or not.
+  *           1: closed, 0 : not closed.
+  * @retval None
+  */
+static void lcdPolyLineRelativeClosed(pPoint Points, uint16_t PointCount, uint16_t Closed)
+{
+    int16_t X = 0, Y = 0;
+    pPoint First = Points;
+
+    if(PointCount < 2)
+    {
+        return;
+    }  
+    X = Points->X;
+    Y = Points->Y;
+    while(--PointCount)
+    {
+        Points++;
+        lcdDrawUniLine(X, Y, X + Points->X, Y + Points->Y);
+        X = X + Points->X;
+        Y = Y + Points->Y;
+    }
+    if(Closed)
+    {
+        lcdDrawUniLine(First->X, First->Y, X, Y);
+    }  
+}
+
+/**
+  * @brief  Displays a closed polyline (between many points).
+  * @param  Points: pointer to the points array.
+  * @param  PointCount: Number of points.
+  * @retval None
+  */
+void lcdClosedPolyLine(pPoint Points, uint16_t PointCount)
+{
+    lcdPolyLine(Points, PointCount);
+    lcdDrawUniLine(Points->X, Points->Y, (Points+PointCount-1)->X, (Points+PointCount-1)->Y);
+}
+
+/**
+  * @brief  Displays a relative polyline (between many points).
+  * @param  Points: pointer to the points array.
+  * @param  PointCount: Number of points.
+  * @retval None
+  */
+void lcdPolyLineRelative(pPoint Points, uint16_t PointCount)
+{
+    lcdPolyLineRelativeClosed(Points, PointCount, 0);
+}
+
+/**
+  * @brief  Displays a closed relative polyline (between many points).
+  * @param  Points: pointer to the points array.
+  * @param  PointCount: Number of points.
+  * @retval None
+  */
+void lcdClosedPolyLineRelative(pPoint Points, uint16_t PointCount)
+{
+    lcdPolyLineRelativeClosed(Points, PointCount, 1);
+}
+
+
+/**
+  * @brief  Displays a  full polyline (between many points).
+  * @param  Points: pointer to the points array.
+  * @param  PointCount: Number of points.
+  * @retval None
+  */
+void lcdFillPolyLine(pPoint Points, uint16_t PointCount)
+{
+    /*  public-domain code by Darel Rex Finley, 2007 */
+    uint16_t  nodes = 0, nodeX[MAX_POLY_CORNERS], pixelX = 0, pixelY = 0, i = 0,
+    j = 0, swap = 0;
+    uint16_t  IMAGE_LEFT = 0, IMAGE_RIGHT = 0, IMAGE_TOP = 0, IMAGE_BOTTOM = 0;
+
+    IMAGE_LEFT = IMAGE_RIGHT = Points->X;
+    IMAGE_TOP= IMAGE_BOTTOM = Points->Y;
+
+    for(i = 1; i < PointCount; i++)
+    {
+        pixelX = POLY_X(i);
+        if(pixelX < IMAGE_LEFT)
+        {
+            IMAGE_LEFT = pixelX;
+        }
+        if(pixelX > IMAGE_RIGHT)
+        {
+            IMAGE_RIGHT = pixelX;
+        }
+
+        pixelY = POLY_Y(i);
+        if(pixelY < IMAGE_TOP)
+        { 
+            IMAGE_TOP = pixelY;
+        }
+        if(pixelY > IMAGE_BOTTOM)
+        {
+            IMAGE_BOTTOM = pixelY;
+        }
+    }
+  
+    lcdSetTextColor(BackColor);  
+
+    /*  Loop through the rows of the image. */
+    for (pixelY = IMAGE_TOP; pixelY < IMAGE_BOTTOM; pixelY++) 
+    {  
+        /* Build a list of nodes. */
+        nodes = 0; j = PointCount-1;
+
+        for (i = 0; i < PointCount; i++) 
+        {
+            if (POLY_Y(i)<(double) pixelY && POLY_Y(j)>=(double) pixelY || POLY_Y(j)<(double) pixelY && POLY_Y(i)>=(double) pixelY) 
+            {
+                nodeX[nodes++]=(int) (POLY_X(i)+((pixelY-POLY_Y(i))*(POLY_X(j)-POLY_X(i)))/(POLY_Y(j)-POLY_Y(i))); 
+            }
+            j = i; 
+        }
+  
+        /* Sort the nodes, via a simple "Bubble" sort. */
+        i = 0;
+        while (i < nodes-1) 
+        {
+            if (nodeX[i]>nodeX[i+1]) 
+            {
+                swap = nodeX[i]; 
+                nodeX[i] = nodeX[i+1]; 
+                nodeX[i+1] = swap; 
+                if(i)
+                {
+                    i--; 
+                }
+            }
+            else 
+            {
+                i++;
+            }
+        }
+  
+        /*  Fill the pixels between node pairs. */
+        for (i = 0; i < nodes; i+=2) 
+        {
+            if(nodeX[i] >= IMAGE_RIGHT) 
+            {
+              break;
+            }
+            if(nodeX[i+1] > IMAGE_LEFT) 
+            {
+                if (nodeX[i] < IMAGE_LEFT)
+                {
+                    nodeX[i]=IMAGE_LEFT;
+                }
+                if(nodeX[i+1] > IMAGE_RIGHT)
+                {
+                    nodeX[i+1] = IMAGE_RIGHT;
+                }
+                lcdSetTextColor(BackColor);
+                lcdDrawLine(pixelY, nodeX[i+1], nodeX[i+1] - nodeX[i], LCD_DIR_HORIZONTAL);
+                lcdSetTextColor(TextColor);
+                PutPixel(pixelY, nodeX[i+1]);
+                PutPixel(pixelY, nodeX[i]);
+                /* for (j=nodeX[i]; j<nodeX[i+1]; j++) PutPixel(j,pixelY); */
+          }
+        }
+    } 
+
+    /* draw the edges */
+    lcdSetTextColor(TextColor);
+}
+
+/**
+  * @brief  Writes to the selected LCD register.
+  * @param  lcdReg: address of the selected register.
+  * @param  lcdRegValue: value to write to the selected register.
+  * @retval None
+  */
+void lcdWriteReg(uint8_t lcdReg, uint16_t lcdRegValue)
+{
+    /* Write 16-bit Index, then Write Reg */
+    ili9325_REG = lcdReg;
+    ili9325_RAM = lcdRegValue;
+}
+
+
+/**
+  * @brief  Reads the selected LCD Register.
+  * @param  lcdReg: address of the selected register.
+  * @retval LCD Register Value.
+  */
+uint16_t lcdReadReg(uint8_t lcdReg)
+{
+    /* Write 16-bit Index (then Read Reg) */
+    ili9325_REG = lcdReg;
+    return (ili9325_RAM);
+}
+
+
+/**
+  * @brief  Prepare to write to the LCD RAM.
+  * @param  None
+  * @retval None
+  */
+void lcdWriteRAM_Prepare(void)
+{
+    ili9325_REG = LCD_REG_34;
+}
+
+
+/**
+  * @brief  Writes to the LCD RAM.
+  * @param  RGB_Code: the pixel color in RGB mode (5-6-5).
+  * @retval None
+  */
+void lcdWriteRAM(uint16_t RGB_Code)
+{
+    /* Write 16-bit GRAM Reg */
+    ili9325_RAM = RGB_Code;
+}
+
+
+/**
+  * @brief  Reads the LCD RAM.
+  * @param  None
+  * @retval LCD RAM Value.
+  */
+uint16_t lcdReadRAM(void)
+{
+    /* Write 16-bit Index (then Read Reg) */
+    ili9325_REG = LCD_REG_34; /* Select GRAM Reg */
+    /* Read 16-bit Reg */
+    return ili9325_RAM;
+}
+
+
+/**
+  * @brief  Power on the LCD.
+  * @param  None
+  * @retval None
+  */
+void lcdPowerOn(void)
+{
+    /* Power On sequence ---------------------------------------------------------*/
+    lcdWriteReg(LCD_REG_16, 0x0000); /* SAP, BT[3:0], AP, DSTB, SLP, STB */
+    lcdWriteReg(LCD_REG_17, 0x0000); /* DC1[2:0], DC0[2:0], VC[2:0] */
+    lcdWriteReg(LCD_REG_18, 0x0000); /* VREG1OUT voltage */
+    lcdWriteReg(LCD_REG_19, 0x0000); /* VDV[4:0] for VCOM amplitude*/
+    _delay_(20);                     /* Dis-charge capacitor power voltage (200ms) */
+    lcdWriteReg(LCD_REG_16, 0x17B0); /* SAP, BT[3:0], AP, DSTB, SLP, STB */
+    lcdWriteReg(LCD_REG_17, 0x0137); /* DC1[2:0], DC0[2:0], VC[2:0] */
+    _delay_(5);                      /* Delay 50 ms */
+    lcdWriteReg(LCD_REG_18, 0x0139); /* VREG1OUT voltage */
+    _delay_(5);                      /* Delay 50 ms */
+    lcdWriteReg(LCD_REG_19, 0x1d00); /* VDV[4:0] for VCOM amplitude */
+    lcdWriteReg(LCD_REG_41, 0x0013); /* VCM[4:0] for VCOMH */
+    _delay_(5);                      /* Delay 50 ms */
+    lcdWriteReg(LCD_REG_7, 0x0173);  /* 262K color and display ON */
+}
+
+
+/**
+  * @brief  Enables the Display.
+  * @param  None
+  * @retval None
+  */
+void lcdDisplayOn(void)
+{
+    /* Display On */
+    lcdWriteReg(LCD_REG_7, 0x0173); /* 262K color and display ON */
+}
+
+
+/**
+  * @brief  Disables the Display.
+  * @param  None
+  * @retval None
+  */
+void lcdDisplayOff(void)
+{
+    /* Display Off */
+    lcdWriteReg(LCD_REG_7, 0x0); 
+}
+
+/**
+  * @brief  Configures LCD Control lines (FSMC Pins) in alternate function mode.
+  * @param  None
+  * @retval None
+  */
+void lcdCtrlLinesConfig(void)
+{
+    GPIO_InitTypeDef gpioSt;
+  
+    // RCC使能FSMC的时钟直接来自AHB时钟, 也就是HCLK, 中间没有分频. 控制位是RCC_AHBENR中的FSMCEN位
+    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_FSMC, ENABLE);
+    // GPIO端口和AFIO端口时钟来自APB2, 也就是PCLK2, 控制位是RCC_APB2ERN中的IOPxEN 和AFIOEN位
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOE | RCC_APB2Periph_GPIOD, ENABLE); 
+                             
+    gpioSt.GPIO_Mode = GPIO_Mode_Out_PP;
+    gpioSt.GPIO_Speed = GPIO_Speed_50MHz;              
+    gpioSt.GPIO_Pin = GPIO_Pin_0;         //LCD 背光控制
+    GPIO_Init(GPIOE, &gpioSt);
+
+    gpioSt.GPIO_Pin = GPIO_Pin_1 ;        //LCD-RST
+    GPIO_Init(GPIOE, &gpioSt);      
+
+    // Set PD.00(D2), PD.01(D3), PD.04(NOE/RD), PD.05(NWE/WR), PD.08(D13), PD.09(D14),
+    // PD.10(D15), PD.14(D0), PD.15(D1) as alternate function push pull      
+    gpioSt.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_4 | GPIO_Pin_5 |
+                                GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_14 | 
+                                GPIO_Pin_15;
+    gpioSt.GPIO_Speed = GPIO_Speed_50MHz;
+    gpioSt.GPIO_Mode = GPIO_Mode_AF_PP;
+    GPIO_Init(GPIOD, &gpioSt);
+
+    // Set PE.07(D4), PE.08(D5), PE.09(D6), PE.10(D7), PE.11(D8), PE.12(D9), PE.13(D10),
+    // PE.14(D11), PE.15(D12) as alternate function push pull 
+    gpioSt.GPIO_Pin = GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | 
+                                GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | 
+                                GPIO_Pin_15;
+    GPIO_Init(GPIOE, &gpioSt); 
+
+    // CS 为FSMC_NE1(PD7) 
+    gpioSt.GPIO_Pin = GPIO_Pin_7; 
+    GPIO_Init(GPIOD, &gpioSt);
+
+    // RS 为FSMC_A16(PD11)
+    gpioSt.GPIO_Pin = GPIO_Pin_11 ; 
+    GPIO_Init(GPIOD, &gpioSt); 
+
+    GPIO_SetBits(GPIOD, GPIO_Pin_7);            //CS=1 
+    GPIO_SetBits(GPIOD, GPIO_Pin_11);           //RS=1
+    GPIO_SetBits(GPIOD, GPIO_Pin_14| GPIO_Pin_15 |GPIO_Pin_0 | GPIO_Pin_1);       
+    GPIO_SetBits(GPIOE, GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10);   
+    GPIO_SetBits(GPIOE, GPIO_Pin_0);            //LIGHT off
+    GPIO_SetBits(GPIOE, GPIO_Pin_1);            //RESET=1
+    GPIO_SetBits(GPIOD, GPIO_Pin_4);            //RD=1
+    GPIO_SetBits(GPIOD, GPIO_Pin_5);            //WR=1
+}
+
+/**
+  * @brief  Configures the Parallel interface (FSMC) for LCD(Parallel mode)
+  * @param  None
+  * @retval None
+  */
+void lcdFSMCConfig(void)
+{
+    FSMC_NORSRAMInitTypeDef  fsmcTy;
+    FSMC_NORSRAMTimingInitTypeDef  p;
+    /*-- FSMC Configuration ------------------------------------------------------*/
+    /*----------------------- SRAM Bank 1 ----------------------------------------*/
+    /* FSMC_Bank1_NORSRAM4 configuration */
+    p.FSMC_AddressSetupTime = 1;
+    p.FSMC_AddressHoldTime = 0;
+    p.FSMC_DataSetupTime = 2;
+    p.FSMC_BusTurnAroundDuration = 0;
+    p.FSMC_CLKDivision = 0;
+    p.FSMC_DataLatency = 0;
+    p.FSMC_AccessMode = FSMC_AccessMode_A;
+    /* Color LCD configuration ------------------------------------
+     LCD configured as follow:
+        - Data/Address MUX = Disable
+        - Memory Type = SRAM
+        - Data Width = 16bit
+        - Write Operation = Enable
+        - Extended Mode = Enable
+        - Asynchronous Wait = Disable */
+    fsmcTy.FSMC_Bank = FSMC_Bank1_NORSRAM1;
+    fsmcTy.FSMC_DataAddressMux = FSMC_DataAddressMux_Disable;
+    fsmcTy.FSMC_MemoryType = FSMC_MemoryType_SRAM;
+    fsmcTy.FSMC_MemoryDataWidth = FSMC_MemoryDataWidth_16b;
+    fsmcTy.FSMC_BurstAccessMode = FSMC_BurstAccessMode_Disable;
+    fsmcTy.FSMC_AsynchronousWait = FSMC_AsynchronousWait_Disable;
+    fsmcTy.FSMC_WaitSignalPolarity = FSMC_WaitSignalPolarity_Low;
+    fsmcTy.FSMC_WrapMode = FSMC_WrapMode_Disable;
+    fsmcTy.FSMC_WaitSignalActive = FSMC_WaitSignalActive_BeforeWaitState;
+    fsmcTy.FSMC_WriteOperation = FSMC_WriteOperation_Enable;
+    fsmcTy.FSMC_WaitSignal = FSMC_WaitSignal_Disable;
+    fsmcTy.FSMC_ExtendedMode = FSMC_ExtendedMode_Disable;
+    fsmcTy.FSMC_WriteBurst = FSMC_WriteBurst_Disable;
+    fsmcTy.FSMC_ReadWriteTimingStruct = &p;
+    fsmcTy.FSMC_WriteTimingStruct = &p;
+    FSMC_NORSRAMInit(&fsmcTy);  
+    /* BANK 1 (of NOR/SRAM Bank) is enabled */
+    FSMC_NORSRAMCmd(FSMC_Bank1_NORSRAM1, ENABLE);
+}
+
+/**
+  * @brief  Displays a pixel.
+  * @param  x: pixel x.
+  * @param  y: pixel y.  
+  * @retval None
+  */
+static void PutPixel(int16_t x, int16_t y)
+{ 
+    if(x < 0 || x > 239 || y < 0 || y > 319)
+    {
+        return;  
+    }
+    lcdDrawLine(x, y, 1, LCD_DIR_HORIZONTAL);
+}
+
+/**
+  * @brief  Reset LCD.
+  * @retval None
+  */
+void lcdReset(void)
+{
+    GPIO_ResetBits(GPIOF, GPIO_Pin_1);
+    sysTickDelay(50);					   
+    GPIO_SetBits(GPIOF, GPIO_Pin_1 );		 	 
+	sysTickDelay(50);	
+    GPIO_ResetBits(GPIOD, GPIO_Pin_7);
+}
+
+/**
+  * @brief  Turn on the light of LCD.
+  * @retval None
+  */
+void lcdLightOn(void)
+{
+    GPIO_SetBits(GPIOE, GPIO_Pin_0);
+}
+
+/**
+  * @brief  Turn off the light of LCD.
+  * @retval None
+  */
+void lcdLightOff(void)
+{
+    GPIO_ResetBits(GPIOE, GPIO_Pin_0);
+}
+
