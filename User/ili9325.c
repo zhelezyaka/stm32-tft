@@ -15,19 +15,19 @@ static  __IO uint16_t TextColor = 0x0000, BackColor = 0xFFFF;
 
 
 static void PutPixel(int16_t x, int16_t y);
-static void lcdPolyLineRelativeClosed(pPoint Points, uint16_t PointCount, uint16_t Closed);
+static void LCD_PolyLineRelativeClosed(pPoint Points, uint16_t PointCount, uint16_t Closed);
 
 /**
   * @brief  DeInitializes the LCD.
   * @param  None
   * @retval None
   */
-void lcdDeInit(void)
+void LCD_DeInit(void)
 { 
     GPIO_InitTypeDef GPIO_InitStructure;
 
     /*!< LCD Display Off */
-    lcdDisplayOff();
+    LCD_DisplayOff();
 
     /* BANK 1 (of NOR/SRAM Bank 1~4) is disabled */
     FSMC_NORSRAMCmd(FSMC_Bank1_NORSRAM1, ENABLE);
@@ -62,97 +62,97 @@ void lcdDeInit(void)
   * @param  None
   * @retval None
   */
-void ili9325_lcdInit(void)
+void LCD_ILI9325_Init(void)
 { 
     __IO uint32_t lcdid = 0;
   
     /* Configure the LCD Control pins --------------------------------------------*/
-    lcdCtrlLinesConfig();
+    LCD_CtrlLinesConfig();
     /* Configure the FSMC Parallel interface -------------------------------------*/
-    lcdFSMCConfig();
+    LCD_FSMCConfig();
   
     _delay_(5); /* delay 50 ms */
-    lcdReset();
+    LCD_Reset();
     /* Read the LCD ID */
-    lcdid = lcdReadReg(0x00);
+    lcdid = LCD_ReadReg(0x00);
   
     if(lcdid == 0x9325 || lcdid == 0x9328) /* Check if the LCD is ILI9325 Controller */
     {
         /* Start Initial Sequence ------------------------------------------------*/
-        lcdWriteReg(LCD_REG_0, 0x0001);  /* Start internal OSC. */
-        lcdWriteReg(LCD_REG_1, 0x0100);  /* Set SS and SM bit */
-        lcdWriteReg(LCD_REG_2, 0x0700);  /* Set 1 line inversion */
-        lcdWriteReg(LCD_REG_3, 0x1018);  /* Set GRAM write direction and BGR=1. */
-        lcdWriteReg(LCD_REG_4, 0x0000);  /* Resize register */
-        lcdWriteReg(LCD_REG_8, 0x0202);  /* Set the back porch and front porch */
-        lcdWriteReg(LCD_REG_9, 0x0000);  /* Set non-display area refresh cycle ISC[3:0] */
-        lcdWriteReg(LCD_REG_10, 0x0000); /* FMARK function */
-        lcdWriteReg(LCD_REG_12, 0x0000); /* RGB interface setting */
-        lcdWriteReg(LCD_REG_13, 0x0000); /* Frame marker Position */
-        lcdWriteReg(LCD_REG_15, 0x0000); /* RGB interface polarity */
+        LCD_WriteReg(LCD_REG_0, 0x0001);  /* Start internal OSC. */
+        LCD_WriteReg(LCD_REG_1, 0x0100);  /* Set SS and SM bit */
+        LCD_WriteReg(LCD_REG_2, 0x0700);  /* Set 1 line inversion */
+        LCD_WriteReg(LCD_REG_3, 0x1018);  /* Set GRAM write direction and BGR=1. */
+        LCD_WriteReg(LCD_REG_4, 0x0000);  /* Resize register */
+        LCD_WriteReg(LCD_REG_8, 0x0202);  /* Set the back porch and front porch */
+        LCD_WriteReg(LCD_REG_9, 0x0000);  /* Set non-display area refresh cycle ISC[3:0] */
+        LCD_WriteReg(LCD_REG_10, 0x0000); /* FMARK function */
+        LCD_WriteReg(LCD_REG_12, 0x0000); /* RGB interface setting */
+        LCD_WriteReg(LCD_REG_13, 0x0000); /* Frame marker Position */
+        LCD_WriteReg(LCD_REG_15, 0x0000); /* RGB interface polarity */
 
         /* Power On sequence -----------------------------------------------------*/
-        lcdWriteReg(LCD_REG_16, 0x0000); /* SAP, BT[3:0], AP, DSTB, SLP, STB */
-        lcdWriteReg(LCD_REG_17, 0x0000); /* DC1[2:0], DC0[2:0], VC[2:0] */
-        lcdWriteReg(LCD_REG_18, 0x0000); /* VREG1OUT voltage */
-        lcdWriteReg(LCD_REG_19, 0x0000); /* VDV[4:0] for VCOM amplitude */
+        LCD_WriteReg(LCD_REG_16, 0x0000); /* SAP, BT[3:0], AP, DSTB, SLP, STB */
+        LCD_WriteReg(LCD_REG_17, 0x0000); /* DC1[2:0], DC0[2:0], VC[2:0] */
+        LCD_WriteReg(LCD_REG_18, 0x0000); /* VREG1OUT voltage */
+        LCD_WriteReg(LCD_REG_19, 0x0000); /* VDV[4:0] for VCOM amplitude */
         _delay_(20);                     /* Dis-charge capacitor power voltage (200ms) */
-        lcdWriteReg(LCD_REG_16, 0x17B0); /* SAP, BT[3:0], AP, DSTB, SLP, STB */
-        lcdWriteReg(LCD_REG_17, 0x0137); /* DC1[2:0], DC0[2:0], VC[2:0] */
+        LCD_WriteReg(LCD_REG_16, 0x17B0); /* SAP, BT[3:0], AP, DSTB, SLP, STB */
+        LCD_WriteReg(LCD_REG_17, 0x0137); /* DC1[2:0], DC0[2:0], VC[2:0] */
         _delay_(5);                      /* Delay 50 ms */
-        lcdWriteReg(LCD_REG_18, 0x0139); /* VREG1OUT voltage */
+        LCD_WriteReg(LCD_REG_18, 0x0139); /* VREG1OUT voltage */
         _delay_(5);                      /* Delay 50 ms */
-        lcdWriteReg(LCD_REG_19, 0x1d00); /* VDV[4:0] for VCOM amplitude */
-        lcdWriteReg(LCD_REG_41, 0x0013); /* VCM[4:0] for VCOMH */
+        LCD_WriteReg(LCD_REG_19, 0x1d00); /* VDV[4:0] for VCOM amplitude */
+        LCD_WriteReg(LCD_REG_41, 0x0013); /* VCM[4:0] for VCOMH */
         _delay_(5);                      /* Delay 50 ms */
-        lcdWriteReg(LCD_REG_32, 0x0000); /* GRAM horizontal Address */
-        lcdWriteReg(LCD_REG_33, 0x0000); /* GRAM Vertical Address */
+        LCD_WriteReg(LCD_REG_32, 0x0000); /* GRAM horizontal Address */
+        LCD_WriteReg(LCD_REG_33, 0x0000); /* GRAM Vertical Address */
 
         /* Adjust the Gamma Curve (ILI9325)---------------------------------------*/
-        lcdWriteReg(LCD_REG_48, 0x0007);
-        lcdWriteReg(LCD_REG_49, 0x0302);
-        lcdWriteReg(LCD_REG_50, 0x0105);
-        lcdWriteReg(LCD_REG_53, 0x0206);
-        lcdWriteReg(LCD_REG_54, 0x0808);
-        lcdWriteReg(LCD_REG_55, 0x0206);
-        lcdWriteReg(LCD_REG_56, 0x0504);
-        lcdWriteReg(LCD_REG_57, 0x0007);
-        lcdWriteReg(LCD_REG_60, 0x0105);
-        lcdWriteReg(LCD_REG_61, 0x0808);
+        LCD_WriteReg(LCD_REG_48, 0x0007);
+        LCD_WriteReg(LCD_REG_49, 0x0302);
+        LCD_WriteReg(LCD_REG_50, 0x0105);
+        LCD_WriteReg(LCD_REG_53, 0x0206);
+        LCD_WriteReg(LCD_REG_54, 0x0808);
+        LCD_WriteReg(LCD_REG_55, 0x0206);
+        LCD_WriteReg(LCD_REG_56, 0x0504);
+        LCD_WriteReg(LCD_REG_57, 0x0007);
+        LCD_WriteReg(LCD_REG_60, 0x0105);
+        LCD_WriteReg(LCD_REG_61, 0x0808);
 
         /* Set GRAM area ---------------------------------------------------------*/
-        lcdWriteReg(LCD_REG_80, 0x0000); /* Horizontal GRAM Start Address */
-        lcdWriteReg(LCD_REG_81, 0x00EF); /* Horizontal GRAM End Address */
-        lcdWriteReg(LCD_REG_82, 0x0000); /* Vertical GRAM Start Address */
-        lcdWriteReg(LCD_REG_83, 0x013F); /* Vertical GRAM End Address */
+        LCD_WriteReg(LCD_REG_80, 0x0000); /* Horizontal GRAM Start Address */
+        LCD_WriteReg(LCD_REG_81, 0x00EF); /* Horizontal GRAM End Address */
+        LCD_WriteReg(LCD_REG_82, 0x0000); /* Vertical GRAM Start Address */
+        LCD_WriteReg(LCD_REG_83, 0x013F); /* Vertical GRAM End Address */
 
-        lcdWriteReg(LCD_REG_96,  0xA700); /* Gate Scan Line(GS=1, scan direction is G320~G1) */
-        lcdWriteReg(LCD_REG_97,  0x0001); /* NDL,VLE, REV */
-        lcdWriteReg(LCD_REG_106, 0x0000); /* set scrolling line */
+        LCD_WriteReg(LCD_REG_96,  0xA700); /* Gate Scan Line(GS=1, scan direction is G320~G1) */
+        LCD_WriteReg(LCD_REG_97,  0x0001); /* NDL,VLE, REV */
+        LCD_WriteReg(LCD_REG_106, 0x0000); /* set scrolling line */
 
         /* Partial Display Control -----------------------------------------------*/
-        lcdWriteReg(LCD_REG_128, 0x0000);
-        lcdWriteReg(LCD_REG_129, 0x0000);
-        lcdWriteReg(LCD_REG_130, 0x0000);
-        lcdWriteReg(LCD_REG_131, 0x0000);
-        lcdWriteReg(LCD_REG_132, 0x0000);
-        lcdWriteReg(LCD_REG_133, 0x0000);
+        LCD_WriteReg(LCD_REG_128, 0x0000);
+        LCD_WriteReg(LCD_REG_129, 0x0000);
+        LCD_WriteReg(LCD_REG_130, 0x0000);
+        LCD_WriteReg(LCD_REG_131, 0x0000);
+        LCD_WriteReg(LCD_REG_132, 0x0000);
+        LCD_WriteReg(LCD_REG_133, 0x0000);
 
         /* Panel Control ---------------------------------------------------------*/
-        lcdWriteReg(LCD_REG_144, 0x0010);
-        lcdWriteReg(LCD_REG_146, 0x0000);
-        lcdWriteReg(LCD_REG_147, 0x0003);
-        lcdWriteReg(LCD_REG_149, 0x0110);
-        lcdWriteReg(LCD_REG_151, 0x0000);
-        lcdWriteReg(LCD_REG_152, 0x0000);
+        LCD_WriteReg(LCD_REG_144, 0x0010);
+        LCD_WriteReg(LCD_REG_146, 0x0000);
+        LCD_WriteReg(LCD_REG_147, 0x0003);
+        LCD_WriteReg(LCD_REG_149, 0x0110);
+        LCD_WriteReg(LCD_REG_151, 0x0000);
+        LCD_WriteReg(LCD_REG_152, 0x0000);
 
         /* set GRAM write direction and BGR = 1 */
         /* I/D=00 (Horizontal : increment, Vertical : decrement) */
         /* AM=1 (address is updated in vertical writing direction) */
-        lcdWriteReg(LCD_REG_3, 0x1018);
+        LCD_WriteReg(LCD_REG_3, 0x1018);
 
-        lcdWriteReg(LCD_REG_7, 0x0133); /* 262K color and display ON */
-        lcdSetFont(&LCD_DEFAULT_FONT);
+        LCD_WriteReg(LCD_REG_7, 0x0133); /* 262K color and display ON */
+        LCD_SetFont(&LCD_DEFAULT_FONT);
     }
 }
 
@@ -162,7 +162,7 @@ void ili9325_lcdInit(void)
   * @param  _BackColor: specifies the Background Color.
   * @retval None
   */
-void lcdSetColors(__IO uint16_t _TextColor, __IO uint16_t _BackColor)
+void LCD_SetColors(__IO uint16_t _TextColor, __IO uint16_t _BackColor)
 {
     TextColor = _TextColor; 
     BackColor = _BackColor;
@@ -176,7 +176,7 @@ void lcdSetColors(__IO uint16_t _TextColor, __IO uint16_t _BackColor)
             Color.
   * @retval None
   */
-void lcdGetColors(__IO uint16_t *_TextColor, __IO uint16_t *_BackColor)
+void LCD_GetColors(__IO uint16_t *_TextColor, __IO uint16_t *_BackColor)
 {
     *_TextColor = TextColor; *_BackColor = BackColor;
 }
@@ -186,7 +186,7 @@ void lcdGetColors(__IO uint16_t *_TextColor, __IO uint16_t *_BackColor)
   * @param  Color: specifies the Text color code RGB(5-6-5).
   * @retval None
   */
-void lcdSetTextColor(__IO uint16_t Color)
+void LCD_SetTextColor(__IO uint16_t Color)
 {
     TextColor = Color;
 }
@@ -196,7 +196,7 @@ void lcdSetTextColor(__IO uint16_t Color)
   * @param  Color: specifies the Background color code RGB(5-6-5).
   * @retval None
   */
-void lcdSetBackColor(__IO uint16_t Color)
+void LCD_SetBackColor(__IO uint16_t Color)
 {
     BackColor = Color;
 }
@@ -206,7 +206,7 @@ void lcdSetBackColor(__IO uint16_t Color)
   * @param  fonts: specifies the font to be used.
   * @retval None
   */
-void lcdSetFont(sFONT *fonts)
+void LCD_SetFont(sFONT *fonts)
 {
     lcdCurrentfonts = fonts;
 }
@@ -216,7 +216,7 @@ void lcdSetFont(sFONT *fonts)
   * @param  None.
   * @retval the used font.
   */
-sFONT *lcdGetFont(void)
+sFONT *LCD_GetFont(void)
 {
     return lcdCurrentfonts;
 }
@@ -228,14 +228,14 @@ sFONT *lcdGetFont(void)
   *     @arg Linex: where x can be 0..n
   * @retval None
   */
-void lcdClearLine(uint8_t Line)
+void LCD_ClearLine(uint8_t Line)
 {
     uint16_t refcolumn = LCD_PIXEL_WIDTH - 1;
     /* Send the string character by character on lCD */
     while (((refcolumn + 1)&0xFFFF) >= lcdCurrentfonts->Width)
     {
         /* Display one character on LCD */
-        lcdDisplayChar(Line, refcolumn, ' ');
+        LCD_DisplayChar(Line, refcolumn, ' ');
         /* Decrement the column position by 16 */
         refcolumn -= lcdCurrentfonts->Width;
     }
@@ -246,12 +246,12 @@ void lcdClearLine(uint8_t Line)
   * @param  Color: the color of the background.
   * @retval None
   */
-void lcdClear(uint16_t Color)
+void LCD_Clear(uint16_t Color)
 {
     uint32_t index = 0;
 
-    lcdSetCursor(0x00, 0x013F); 
-    lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
+    LCD_SetCursor(0x00, 0x013F); 
+    LCD_WriteRAM_Prepare(); /* Prepare to write GRAM */
     for(index = 0; index < 76800; index++)
     {
         ili9325_RAM = Color;
@@ -264,10 +264,10 @@ void lcdClear(uint16_t Color)
   * @param  Ypos: specifies the Y position. 
   * @retval None
   */
-void lcdSetCursor(uint8_t Xpos, uint16_t Ypos)
+void LCD_SetCursor(uint8_t Xpos, uint16_t Ypos)
 {
-    lcdWriteReg(LCD_REG_32, Xpos);
-    lcdWriteReg(LCD_REG_33, Ypos);
+    LCD_WriteReg(LCD_REG_32, Xpos);
+    LCD_WriteReg(LCD_REG_33, Ypos);
 }
 
 /**
@@ -277,33 +277,33 @@ void lcdSetCursor(uint8_t Xpos, uint16_t Ypos)
   * @param  c: pointer to the character data.
   * @retval None
   */
-void lcdDrawChar(uint8_t Xpos, uint16_t Ypos, const uint16_t *c)
+void LCD_DrawChar(uint8_t Xpos, uint16_t Ypos, const uint16_t *c)
 {
     uint32_t index = 0, i = 0;
     uint8_t Xaddress = 0;
 
     Xaddress = Xpos;
 
-    lcdSetCursor(Xaddress, Ypos);
+    LCD_SetCursor(Xaddress, Ypos);
   
     for(index = 0; index < lcdCurrentfonts->Height; index++)
     {
-        lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
+        LCD_WriteRAM_Prepare(); /* Prepare to write GRAM */
         for(i = 0; i < lcdCurrentfonts->Width; i++)
         {
             if((((c[index] & ((0x80 << ((lcdCurrentfonts->Width / 12 ) * 8 ) ) >> i)) == 0x00) &&(lcdCurrentfonts->Width <= 12))||
             (((c[index] & (0x1 << i)) == 0x00)&&(lcdCurrentfonts->Width > 12 )))
 
             {
-                lcdWriteRAM(BackColor);
+                LCD_WriteRAM(BackColor);
             }
             else
             {
-                lcdWriteRAM(TextColor);
+                LCD_WriteRAM(TextColor);
             }
         }
         Xaddress++;
-        lcdSetCursor(Xaddress, Ypos);
+        LCD_SetCursor(Xaddress, Ypos);
     }
 }
 
@@ -316,10 +316,10 @@ void lcdDrawChar(uint8_t Xpos, uint16_t Ypos, const uint16_t *c)
   * @param  Ascii: character ascii code, must be between 0x20 and 0x7E.
   * @retval None
   */
-void lcdDisplayChar(uint8_t Line, uint16_t Column, uint8_t Ascii)
+void LCD_DisplayChar(uint8_t Line, uint16_t Column, uint8_t Ascii)
 {
     Ascii -= 32;
-    lcdDrawChar(Line, Column, &lcdCurrentfonts->table[Ascii * lcdCurrentfonts->Height]);
+    LCD_DrawChar(Line, Column, &lcdCurrentfonts->table[Ascii * lcdCurrentfonts->Height]);
 }
 
 /**
@@ -330,7 +330,7 @@ void lcdDisplayChar(uint8_t Line, uint16_t Column, uint8_t Ascii)
   * @param  *ptr: pointer to string to display on LCD.
   * @retval None
   */
-void lcdDisplayStringLine(uint8_t Line, uint8_t *ptr)
+void LCD_DisplayStringLine(uint8_t Line, uint8_t *ptr)
 {
     uint16_t refcolumn = LCD_PIXEL_WIDTH - 1;
 
@@ -338,7 +338,7 @@ void lcdDisplayStringLine(uint8_t Line, uint8_t *ptr)
     while ((*ptr != 0) & (((refcolumn + 1) & 0xFFFF) >= lcdCurrentfonts->Width))
     {
         /* Display one character on LCD */
-        lcdDisplayChar(Line, refcolumn, *ptr);
+        LCD_DisplayChar(Line, refcolumn, *ptr);
         /* Decrement the column position by 16 */
         refcolumn -= lcdCurrentfonts->Width;
         /* Point on the next character */
@@ -354,31 +354,31 @@ void lcdDisplayStringLine(uint8_t Line, uint8_t *ptr)
   * @param  Width: display window width.
   * @retval None
   */
-void lcdSetDisplayWindow(uint8_t Xpos, uint16_t Ypos, uint8_t Height, uint16_t Width)
+void LCD_SetDisplayWindow(uint8_t Xpos, uint16_t Ypos, uint8_t Height, uint16_t Width)
 {
     /* Horizontal GRAM Start Address */
     if(Xpos >= Height)
     {
-        lcdWriteReg(LCD_REG_80, (Xpos - Height + 1));
+        LCD_WriteReg(LCD_REG_80, (Xpos - Height + 1));
     }
     else
     {
-        lcdWriteReg(LCD_REG_80, 0);
+        LCD_WriteReg(LCD_REG_80, 0);
     }
     /* Horizontal GRAM End Address */
-    lcdWriteReg(LCD_REG_81, Xpos);
+    LCD_WriteReg(LCD_REG_81, Xpos);
     /* Vertical GRAM Start Address */
     if(Ypos >= Width)
     {
-        lcdWriteReg(LCD_REG_82, (Ypos - Width + 1));
+        LCD_WriteReg(LCD_REG_82, (Ypos - Width + 1));
     }  
     else
     {
-        lcdWriteReg(LCD_REG_82, 0);
+        LCD_WriteReg(LCD_REG_82, 0);
     }
     /* Vertical GRAM End Address */
-    lcdWriteReg(LCD_REG_83, Ypos);
-    lcdSetCursor(Xpos, Ypos);
+    LCD_WriteReg(LCD_REG_83, Ypos);
+    LCD_SetCursor(Xpos, Ypos);
 }
 
 /**
@@ -386,10 +386,10 @@ void lcdSetDisplayWindow(uint8_t Xpos, uint16_t Ypos, uint8_t Height, uint16_t W
   * @param  None
   * @retval None
   */
-void lcdWindowModeDisable(void)
+void LCD_WindowModeDisable(void)
 {
-    lcdSetDisplayWindow(239, 0x13F, 240, 320);
-    lcdWriteReg(LCD_REG_3, 0x1018);    
+    LCD_SetDisplayWindow(239, 0x13F, 240, 320);
+    LCD_WriteReg(LCD_REG_3, 0x1018);    
 }
 
 /**
@@ -401,27 +401,27 @@ void lcdWindowModeDisable(void)
   *   This parameter can be one of the following values: Vertical or Horizontal.
   * @retval None
   */
-void lcdDrawLine(uint8_t Xpos, uint16_t Ypos, uint16_t Length, uint8_t Direction)
+void LCD_DrawLine(uint8_t Xpos, uint16_t Ypos, uint16_t Length, uint8_t Direction)
 {
     uint32_t i = 0;
 
-    lcdSetCursor(Xpos, Ypos);
+    LCD_SetCursor(Xpos, Ypos);
     if(Direction == LCD_DIR_HORIZONTAL)
     {
-        lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
+        LCD_WriteRAM_Prepare(); /* Prepare to write GRAM */
         for(i = 0; i < Length; i++)
         {
-            lcdWriteRAM(TextColor);
+            LCD_WriteRAM(TextColor);
         }
     }
     else
     {
         for(i = 0; i < Length; i++)
         {
-            lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
-            lcdWriteRAM(TextColor);
+            LCD_WriteRAM_Prepare(); /* Prepare to write GRAM */
+            LCD_WriteRAM(TextColor);
             Xpos++;
-            lcdSetCursor(Xpos, Ypos);
+            LCD_SetCursor(Xpos, Ypos);
         }
         }
     }
@@ -434,13 +434,13 @@ void lcdDrawLine(uint8_t Xpos, uint16_t Ypos, uint16_t Length, uint8_t Direction
   * @param  Width: display rectangle width.
   * @retval None
   */
-void lcdDrawRect(uint8_t Xpos, uint16_t Ypos, uint8_t Height, uint16_t Width)
+void LCD_DrawRect(uint8_t Xpos, uint16_t Ypos, uint8_t Height, uint16_t Width)
 {
-    lcdDrawLine(Xpos, Ypos, Width, LCD_DIR_HORIZONTAL);
-    lcdDrawLine((Xpos + Height), Ypos, Width, LCD_DIR_HORIZONTAL);
+    LCD_DrawLine(Xpos, Ypos, Width, LCD_DIR_HORIZONTAL);
+    LCD_DrawLine((Xpos + Height), Ypos, Width, LCD_DIR_HORIZONTAL);
 
-    lcdDrawLine(Xpos, Ypos, Height, LCD_DIR_VERTICAL);
-    lcdDrawLine(Xpos, (Ypos - Width + 1), Height, LCD_DIR_VERTICAL);
+    LCD_DrawLine(Xpos, Ypos, Height, LCD_DIR_VERTICAL);
+    LCD_DrawLine(Xpos, (Ypos - Width + 1), Height, LCD_DIR_VERTICAL);
 }
 
 /**
@@ -450,7 +450,7 @@ void lcdDrawRect(uint8_t Xpos, uint16_t Ypos, uint8_t Height, uint16_t Width)
   * @param  Radius
   * @retval None
   */
-void lcdDrawCircle(uint8_t Xpos, uint16_t Ypos, uint16_t Radius)
+void LCD_DrawCircle(uint8_t Xpos, uint16_t Ypos, uint16_t Radius)
 {
     int32_t  D;/* Decision Variable */ 
     uint32_t  CurX;/* Current X Value */
@@ -462,30 +462,30 @@ void lcdDrawCircle(uint8_t Xpos, uint16_t Ypos, uint16_t Radius)
 
     while (CurX <= CurY)
     {
-        lcdSetCursor(Xpos + CurX, Ypos + CurY);
-        lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
-        lcdWriteRAM(TextColor);
-        lcdSetCursor(Xpos + CurX, Ypos - CurY);
-        lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
-        lcdWriteRAM(TextColor);
-        lcdSetCursor(Xpos - CurX, Ypos + CurY);
-        lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
-        lcdWriteRAM(TextColor);
-        lcdSetCursor(Xpos - CurX, Ypos - CurY);
-        lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
-        lcdWriteRAM(TextColor);
-        lcdSetCursor(Xpos + CurY, Ypos + CurX);
-        lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
-        lcdWriteRAM(TextColor);
-        lcdSetCursor(Xpos + CurY, Ypos - CurX);
-        lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
-        lcdWriteRAM(TextColor);
-        lcdSetCursor(Xpos - CurY, Ypos + CurX);
-        lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
-        lcdWriteRAM(TextColor);
-        lcdSetCursor(Xpos - CurY, Ypos - CurX);
-        lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
-        lcdWriteRAM(TextColor);
+        LCD_SetCursor(Xpos + CurX, Ypos + CurY);
+        LCD_WriteRAM_Prepare(); /* Prepare to write GRAM */
+        LCD_WriteRAM(TextColor);
+        LCD_SetCursor(Xpos + CurX, Ypos - CurY);
+        LCD_WriteRAM_Prepare(); /* Prepare to write GRAM */
+        LCD_WriteRAM(TextColor);
+        LCD_SetCursor(Xpos - CurX, Ypos + CurY);
+        LCD_WriteRAM_Prepare(); /* Prepare to write GRAM */
+        LCD_WriteRAM(TextColor);
+        LCD_SetCursor(Xpos - CurX, Ypos - CurY);
+        LCD_WriteRAM_Prepare(); /* Prepare to write GRAM */
+        LCD_WriteRAM(TextColor);
+        LCD_SetCursor(Xpos + CurY, Ypos + CurX);
+        LCD_WriteRAM_Prepare(); /* Prepare to write GRAM */
+        LCD_WriteRAM(TextColor);
+        LCD_SetCursor(Xpos + CurY, Ypos - CurX);
+        LCD_WriteRAM_Prepare(); /* Prepare to write GRAM */
+        LCD_WriteRAM(TextColor);
+        LCD_SetCursor(Xpos - CurY, Ypos + CurX);
+        LCD_WriteRAM_Prepare(); /* Prepare to write GRAM */
+        LCD_WriteRAM(TextColor);
+        LCD_SetCursor(Xpos - CurY, Ypos - CurX);
+        LCD_WriteRAM_Prepare(); /* Prepare to write GRAM */
+        LCD_WriteRAM(TextColor);
         if (D < 0)
         { 
             D += (CurX << 2) + 6;
@@ -504,22 +504,22 @@ void lcdDrawCircle(uint8_t Xpos, uint16_t Ypos, uint16_t Radius)
   * @param  Pict: pointer to the picture array.
   * @retval None
   */
-void lcdDrawMonoPict(const uint32_t *Pict)
+void LCD_DrawMonoPict(const uint32_t *Pict)
 {
     uint32_t index = 0, i = 0;
-    lcdSetCursor(0, (LCD_PIXEL_WIDTH - 1));
-    lcdWriteRAM_Prepare(); /* Prepare to write GRAM */
+    LCD_SetCursor(0, (LCD_PIXEL_WIDTH - 1));
+    LCD_WriteRAM_Prepare(); /* Prepare to write GRAM */
     for(index = 0; index < 2400; index++)
     {
         for(i = 0; i < 32; i++)
         {
             if((Pict[index] & (1 << i)) == 0x00)
             {
-                lcdWriteRAM(BackColor);
+                LCD_WriteRAM(BackColor);
             }
             else
             {
-                lcdWriteRAM(TextColor);
+                LCD_WriteRAM(TextColor);
             }
         }
   }
@@ -530,7 +530,7 @@ void lcdDrawMonoPict(const uint32_t *Pict)
   * @param  BmpAddress: Bmp picture address in the internal Flash.
   * @retval None
   */
-void lcdWriteBMP(uint32_t BmpAddress)
+void LCD_WriteBMP(uint32_t BmpAddress)
 {
     uint32_t index = 0, size = 0;
     /* Read bitmap size */
@@ -544,20 +544,20 @@ void lcdWriteBMP(uint32_t BmpAddress)
     /* Set GRAM write direction and BGR = 1 */
     /* I/D=00 (Horizontal : decrement, Vertical : decrement) */
     /* AM=1 (address is updated in vertical writing direction) */
-    lcdWriteReg(LCD_REG_3, 0x1008);
+    LCD_WriteReg(LCD_REG_3, 0x1008);
 
-    lcdWriteRAM_Prepare();
+    LCD_WriteRAM_Prepare();
  
     for(index = 0; index < size; index++)
     {
-        lcdWriteRAM(*(__IO uint16_t *)BmpAddress);
+        LCD_WriteRAM(*(__IO uint16_t *)BmpAddress);
         BmpAddress += 2;
     }
  
     /* Set GRAM write direction and BGR = 1 */
     /* I/D = 01 (Horizontal : increment, Vertical : decrement) */
     /* AM = 1 (address is updated in vertical writing direction) */
-    lcdWriteReg(LCD_REG_3, 0x1018);
+    LCD_WriteReg(LCD_REG_3, 0x1018);
 }
 
 /**
@@ -568,28 +568,28 @@ void lcdWriteBMP(uint32_t BmpAddress)
   * @param  Width: rectangle width.
   * @retval None
   */
-void lcdDrawFullRect(uint16_t Xpos, uint16_t Ypos, uint16_t Width, uint16_t Height)
+void LCD_DrawFullRect(uint16_t Xpos, uint16_t Ypos, uint16_t Width, uint16_t Height)
 {
-    lcdSetTextColor(TextColor);
+    LCD_SetTextColor(TextColor);
 
-    lcdDrawLine(Xpos, Ypos, Width, LCD_DIR_HORIZONTAL);
-    lcdDrawLine((Xpos + Height), Ypos, Width, LCD_DIR_HORIZONTAL);
+    LCD_DrawLine(Xpos, Ypos, Width, LCD_DIR_HORIZONTAL);
+    LCD_DrawLine((Xpos + Height), Ypos, Width, LCD_DIR_HORIZONTAL);
 
-    lcdDrawLine(Xpos, Ypos, Height, LCD_DIR_VERTICAL);
-    lcdDrawLine(Xpos, (Ypos - Width + 1), Height, LCD_DIR_VERTICAL);
+    LCD_DrawLine(Xpos, Ypos, Height, LCD_DIR_VERTICAL);
+    LCD_DrawLine(Xpos, (Ypos - Width + 1), Height, LCD_DIR_VERTICAL);
 
     Width -= 2;
     Height--;
     Ypos--;
 
-    lcdSetTextColor(BackColor);
+    LCD_SetTextColor(BackColor);
 
     while(Height--)
     {
-        lcdDrawLine(++Xpos, Ypos, Width, LCD_DIR_HORIZONTAL);    
+        LCD_DrawLine(++Xpos, Ypos, Width, LCD_DIR_HORIZONTAL);    
     }
 
-    lcdSetTextColor(TextColor);
+    LCD_SetTextColor(TextColor);
 }
 
 /**
@@ -599,7 +599,7 @@ void lcdDrawFullRect(uint16_t Xpos, uint16_t Ypos, uint16_t Width, uint16_t Heig
   * @param  Radius
   * @retval None
   */
-void lcdDrawFullCircle(uint16_t Xpos, uint16_t Ypos, uint16_t Radius)
+void LCD_DrawFullCircle(uint16_t Xpos, uint16_t Ypos, uint16_t Radius)
 {
     int32_t  D;    /* Decision Variable */ 
     uint32_t  CurX;/* Current X Value */
@@ -610,20 +610,20 @@ void lcdDrawFullCircle(uint16_t Xpos, uint16_t Ypos, uint16_t Radius)
     CurX = 0;
     CurY = Radius;
 
-    lcdSetTextColor(BackColor);
+    LCD_SetTextColor(BackColor);
 
     while (CurX <= CurY)
     {
         if(CurY > 0) 
         {
-            lcdDrawLine(Xpos - CurX, Ypos + CurY, 2*CurY, LCD_DIR_HORIZONTAL);
-            lcdDrawLine(Xpos + CurX, Ypos + CurY, 2*CurY, LCD_DIR_HORIZONTAL);
+            LCD_DrawLine(Xpos - CurX, Ypos + CurY, 2*CurY, LCD_DIR_HORIZONTAL);
+            LCD_DrawLine(Xpos + CurX, Ypos + CurY, 2*CurY, LCD_DIR_HORIZONTAL);
         }
 
         if(CurX > 0) 
         {
-            lcdDrawLine(Xpos - CurY, Ypos + CurX, 2*CurX, LCD_DIR_HORIZONTAL);
-            lcdDrawLine(Xpos + CurY, Ypos + CurX, 2*CurX, LCD_DIR_HORIZONTAL);
+            LCD_DrawLine(Xpos - CurY, Ypos + CurX, 2*CurX, LCD_DIR_HORIZONTAL);
+            LCD_DrawLine(Xpos + CurY, Ypos + CurX, 2*CurX, LCD_DIR_HORIZONTAL);
         }
         if (D < 0)
         { 
@@ -637,8 +637,8 @@ void lcdDrawFullCircle(uint16_t Xpos, uint16_t Ypos, uint16_t Radius)
         CurX++;
     }
 
-    lcdSetTextColor(TextColor);
-    lcdDrawCircle(Xpos, Ypos, Radius);
+    LCD_SetTextColor(TextColor);
+    LCD_DrawCircle(Xpos, Ypos, Radius);
 }
 
 /**
@@ -649,7 +649,7 @@ void lcdDrawFullCircle(uint16_t Xpos, uint16_t Ypos, uint16_t Radius)
   * @param  y2: specifies the point 2 y position.
   * @retval None
   */
-void lcdDrawUniLine(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
+void LCD_DrawUniLine(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
 {
     int16_t deltax = 0, deltay = 0, x = 0, y = 0, xinc1 = 0, xinc2 = 0, 
     yinc1 = 0, yinc2 = 0, den = 0, num = 0, numadd = 0, numpixels = 0, 
@@ -722,7 +722,7 @@ void lcdDrawUniLine(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
   * @param  PointCount: Number of points.
   * @retval None
   */
-void lcdPolyLine(pPoint Points, uint16_t PointCount)
+void LCD_PolyLine(pPoint Points, uint16_t PointCount)
 {
     int16_t X = 0, Y = 0;
 
@@ -736,7 +736,7 @@ void lcdPolyLine(pPoint Points, uint16_t PointCount)
         X = Points->X;
         Y = Points->Y;
         Points++;
-        lcdDrawUniLine(X, Y, Points->X, Points->Y);
+        LCD_DrawUniLine(X, Y, Points->X, Points->Y);
     }
 }
 
@@ -748,7 +748,7 @@ void lcdPolyLine(pPoint Points, uint16_t PointCount)
   *           1: closed, 0 : not closed.
   * @retval None
   */
-static void lcdPolyLineRelativeClosed(pPoint Points, uint16_t PointCount, uint16_t Closed)
+static void LCD_PolyLineRelativeClosed(pPoint Points, uint16_t PointCount, uint16_t Closed)
 {
     int16_t X = 0, Y = 0;
     pPoint First = Points;
@@ -762,13 +762,13 @@ static void lcdPolyLineRelativeClosed(pPoint Points, uint16_t PointCount, uint16
     while(--PointCount)
     {
         Points++;
-        lcdDrawUniLine(X, Y, X + Points->X, Y + Points->Y);
+        LCD_DrawUniLine(X, Y, X + Points->X, Y + Points->Y);
         X = X + Points->X;
         Y = Y + Points->Y;
     }
     if(Closed)
     {
-        lcdDrawUniLine(First->X, First->Y, X, Y);
+        LCD_DrawUniLine(First->X, First->Y, X, Y);
     }  
 }
 
@@ -778,10 +778,10 @@ static void lcdPolyLineRelativeClosed(pPoint Points, uint16_t PointCount, uint16
   * @param  PointCount: Number of points.
   * @retval None
   */
-void lcdClosedPolyLine(pPoint Points, uint16_t PointCount)
+void LCD_ClosedPolyLine(pPoint Points, uint16_t PointCount)
 {
-    lcdPolyLine(Points, PointCount);
-    lcdDrawUniLine(Points->X, Points->Y, (Points+PointCount-1)->X, (Points+PointCount-1)->Y);
+    LCD_PolyLine(Points, PointCount);
+    LCD_DrawUniLine(Points->X, Points->Y, (Points+PointCount-1)->X, (Points+PointCount-1)->Y);
 }
 
 /**
@@ -790,9 +790,9 @@ void lcdClosedPolyLine(pPoint Points, uint16_t PointCount)
   * @param  PointCount: Number of points.
   * @retval None
   */
-void lcdPolyLineRelative(pPoint Points, uint16_t PointCount)
+void LCD_PolyLineRelative(pPoint Points, uint16_t PointCount)
 {
-    lcdPolyLineRelativeClosed(Points, PointCount, 0);
+    LCD_PolyLineRelativeClosed(Points, PointCount, 0);
 }
 
 /**
@@ -801,9 +801,9 @@ void lcdPolyLineRelative(pPoint Points, uint16_t PointCount)
   * @param  PointCount: Number of points.
   * @retval None
   */
-void lcdClosedPolyLineRelative(pPoint Points, uint16_t PointCount)
+void LCD_ClosedPolyLineRelative(pPoint Points, uint16_t PointCount)
 {
-    lcdPolyLineRelativeClosed(Points, PointCount, 1);
+    LCD_PolyLineRelativeClosed(Points, PointCount, 1);
 }
 
 
@@ -813,7 +813,7 @@ void lcdClosedPolyLineRelative(pPoint Points, uint16_t PointCount)
   * @param  PointCount: Number of points.
   * @retval None
   */
-void lcdFillPolyLine(pPoint Points, uint16_t PointCount)
+void LCD_FillPolyLine(pPoint Points, uint16_t PointCount)
 {
     /*  public-domain code by Darel Rex Finley, 2007 */
     uint16_t  nodes = 0, nodeX[MAX_POLY_CORNERS], pixelX = 0, pixelY = 0, i = 0,
@@ -846,7 +846,7 @@ void lcdFillPolyLine(pPoint Points, uint16_t PointCount)
         }
     }
   
-    lcdSetTextColor(BackColor);  
+    LCD_SetTextColor(BackColor);  
 
     /*  Loop through the rows of the image. */
     for (pixelY = IMAGE_TOP; pixelY < IMAGE_BOTTOM; pixelY++) 
@@ -900,9 +900,9 @@ void lcdFillPolyLine(pPoint Points, uint16_t PointCount)
                 {
                     nodeX[i+1] = IMAGE_RIGHT;
                 }
-                lcdSetTextColor(BackColor);
-                lcdDrawLine(pixelY, nodeX[i+1], nodeX[i+1] - nodeX[i], LCD_DIR_HORIZONTAL);
-                lcdSetTextColor(TextColor);
+                LCD_SetTextColor(BackColor);
+                LCD_DrawLine(pixelY, nodeX[i+1], nodeX[i+1] - nodeX[i], LCD_DIR_HORIZONTAL);
+                LCD_SetTextColor(TextColor);
                 PutPixel(pixelY, nodeX[i+1]);
                 PutPixel(pixelY, nodeX[i]);
                 /* for (j=nodeX[i]; j<nodeX[i+1]; j++) PutPixel(j,pixelY); */
@@ -911,7 +911,7 @@ void lcdFillPolyLine(pPoint Points, uint16_t PointCount)
     } 
 
     /* draw the edges */
-    lcdSetTextColor(TextColor);
+    LCD_SetTextColor(TextColor);
 }
 
 /**
@@ -920,7 +920,7 @@ void lcdFillPolyLine(pPoint Points, uint16_t PointCount)
   * @param  lcdRegValue: value to write to the selected register.
   * @retval None
   */
-void lcdWriteReg(uint8_t lcdReg, uint16_t lcdRegValue)
+void LCD_WriteReg(uint8_t lcdReg, uint16_t lcdRegValue)
 {
     /* Write 16-bit Index, then Write Reg */
     ili9325_REG = lcdReg;
@@ -933,7 +933,7 @@ void lcdWriteReg(uint8_t lcdReg, uint16_t lcdRegValue)
   * @param  lcdReg: address of the selected register.
   * @retval LCD Register Value.
   */
-uint16_t lcdReadReg(uint8_t lcdReg)
+uint16_t LCD_ReadReg(uint8_t lcdReg)
 {
     /* Write 16-bit Index (then Read Reg) */
     ili9325_REG = lcdReg;
@@ -946,7 +946,7 @@ uint16_t lcdReadReg(uint8_t lcdReg)
   * @param  None
   * @retval None
   */
-void lcdWriteRAM_Prepare(void)
+void LCD_WriteRAM_Prepare(void)
 {
     ili9325_REG = LCD_REG_34;
 }
@@ -957,7 +957,7 @@ void lcdWriteRAM_Prepare(void)
   * @param  RGB_Code: the pixel color in RGB mode (5-6-5).
   * @retval None
   */
-void lcdWriteRAM(uint16_t RGB_Code)
+void LCD_WriteRAM(uint16_t RGB_Code)
 {
     /* Write 16-bit GRAM Reg */
     ili9325_RAM = RGB_Code;
@@ -969,7 +969,7 @@ void lcdWriteRAM(uint16_t RGB_Code)
   * @param  None
   * @retval LCD RAM Value.
   */
-uint16_t lcdReadRAM(void)
+uint16_t LCD_ReadRAM(void)
 {
     /* Write 16-bit Index (then Read Reg) */
     ili9325_REG = LCD_REG_34; /* Select GRAM Reg */
@@ -983,23 +983,23 @@ uint16_t lcdReadRAM(void)
   * @param  None
   * @retval None
   */
-void lcdPowerOn(void)
+void LCD_PowerOn(void)
 {
     /* Power On sequence ---------------------------------------------------------*/
-    lcdWriteReg(LCD_REG_16, 0x0000); /* SAP, BT[3:0], AP, DSTB, SLP, STB */
-    lcdWriteReg(LCD_REG_17, 0x0000); /* DC1[2:0], DC0[2:0], VC[2:0] */
-    lcdWriteReg(LCD_REG_18, 0x0000); /* VREG1OUT voltage */
-    lcdWriteReg(LCD_REG_19, 0x0000); /* VDV[4:0] for VCOM amplitude*/
+    LCD_WriteReg(LCD_REG_16, 0x0000); /* SAP, BT[3:0], AP, DSTB, SLP, STB */
+    LCD_WriteReg(LCD_REG_17, 0x0000); /* DC1[2:0], DC0[2:0], VC[2:0] */
+    LCD_WriteReg(LCD_REG_18, 0x0000); /* VREG1OUT voltage */
+    LCD_WriteReg(LCD_REG_19, 0x0000); /* VDV[4:0] for VCOM amplitude*/
     _delay_(20);                     /* Dis-charge capacitor power voltage (200ms) */
-    lcdWriteReg(LCD_REG_16, 0x17B0); /* SAP, BT[3:0], AP, DSTB, SLP, STB */
-    lcdWriteReg(LCD_REG_17, 0x0137); /* DC1[2:0], DC0[2:0], VC[2:0] */
+    LCD_WriteReg(LCD_REG_16, 0x17B0); /* SAP, BT[3:0], AP, DSTB, SLP, STB */
+    LCD_WriteReg(LCD_REG_17, 0x0137); /* DC1[2:0], DC0[2:0], VC[2:0] */
     _delay_(5);                      /* Delay 50 ms */
-    lcdWriteReg(LCD_REG_18, 0x0139); /* VREG1OUT voltage */
+    LCD_WriteReg(LCD_REG_18, 0x0139); /* VREG1OUT voltage */
     _delay_(5);                      /* Delay 50 ms */
-    lcdWriteReg(LCD_REG_19, 0x1d00); /* VDV[4:0] for VCOM amplitude */
-    lcdWriteReg(LCD_REG_41, 0x0013); /* VCM[4:0] for VCOMH */
+    LCD_WriteReg(LCD_REG_19, 0x1d00); /* VDV[4:0] for VCOM amplitude */
+    LCD_WriteReg(LCD_REG_41, 0x0013); /* VCM[4:0] for VCOMH */
     _delay_(5);                      /* Delay 50 ms */
-    lcdWriteReg(LCD_REG_7, 0x0173);  /* 262K color and display ON */
+    LCD_WriteReg(LCD_REG_7, 0x0173);  /* 262K color and display ON */
 }
 
 
@@ -1008,10 +1008,10 @@ void lcdPowerOn(void)
   * @param  None
   * @retval None
   */
-void lcdDisplayOn(void)
+void LCD_DisplayOn(void)
 {
     /* Display On */
-    lcdWriteReg(LCD_REG_7, 0x0173); /* 262K color and display ON */
+    LCD_WriteReg(LCD_REG_7, 0x0173); /* 262K color and display ON */
 }
 
 
@@ -1020,10 +1020,10 @@ void lcdDisplayOn(void)
   * @param  None
   * @retval None
   */
-void lcdDisplayOff(void)
+void LCD_DisplayOff(void)
 {
     /* Display Off */
-    lcdWriteReg(LCD_REG_7, 0x0); 
+    LCD_WriteReg(LCD_REG_7, 0x0); 
 }
 
 /**
@@ -1031,7 +1031,7 @@ void lcdDisplayOff(void)
   * @param  None
   * @retval None
   */
-void lcdCtrlLinesConfig(void)
+void LCD_CtrlLinesConfig(void)
 {
     GPIO_InitTypeDef gpioSt;
   
@@ -1087,7 +1087,7 @@ void lcdCtrlLinesConfig(void)
   * @param  None
   * @retval None
   */
-void lcdFSMCConfig(void)
+void LCD_FSMCConfig(void)
 {
     FSMC_NORSRAMInitTypeDef  fsmcTy;
     FSMC_NORSRAMTimingInitTypeDef  p;
@@ -1141,14 +1141,14 @@ static void PutPixel(int16_t x, int16_t y)
     {
         return;  
     }
-    lcdDrawLine(x, y, 1, LCD_DIR_HORIZONTAL);
+    LCD_DrawLine(x, y, 1, LCD_DIR_HORIZONTAL);
 }
 
 /**
   * @brief  Reset LCD.
   * @retval None
   */
-void lcdReset(void)
+void LCD_Reset(void)
 {
     GPIO_ResetBits(GPIOF, GPIO_Pin_1);
     sysTickDelay(50);					   
@@ -1161,7 +1161,7 @@ void lcdReset(void)
   * @brief  Turn on the light of LCD.
   * @retval None
   */
-void lcdLightOn(void)
+void LCD_LightOn(void)
 {
     GPIO_SetBits(GPIOE, GPIO_Pin_0);
 }
@@ -1170,7 +1170,7 @@ void lcdLightOn(void)
   * @brief  Turn off the light of LCD.
   * @retval None
   */
-void lcdLightOff(void)
+void LCD_LightOff(void)
 {
     GPIO_ResetBits(GPIOE, GPIO_Pin_0);
 }

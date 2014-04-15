@@ -181,7 +181,7 @@ void ProcessInputData(void);
 
 /* Delay handler **************************************************************/
 void TimeOutCalculate(void);      
-void GL_Delay(uint32_t nCount);   
+void GL_Delay(uint32_t nCount); 
 void TimingDelay_Decrement(void);
 
 #ifdef __cplusplus

@@ -28,6 +28,7 @@
 #include "JoyHal.h"
 #include "LcdHal.h"
 #include "cursor.h"
+#include "util.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -4222,11 +4223,12 @@ void TimeOutCalculate(void)
   */
 void GL_Delay(uint32_t nTime)
 {
-  TimingDelay = nTime;
-
-  while (TimingDelay != 0);
+  //TimingDelay = nTime;
+  //while (TimingDelay != 0);
+  sysTickDelay(nTime);
 
 }
+
 
 /**
   * @brief  Decrements the TimingDelay variable.
