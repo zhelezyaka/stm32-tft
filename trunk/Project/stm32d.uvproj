@@ -559,9 +559,9 @@
               <FilePath>..\Libraries\STM32_EVAL\STM32100E_EVAL\stm32100e_eval_ioe.c</FilePath>
             </File>
             <File>
-              <FileName>stm32100e_eval_lcd.c</FileName>
+              <FileName>fonts.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Libraries\STM32_EVAL\STM32100E_EVAL\stm32100e_eval_lcd.c</FilePath>
+              <FilePath>..\Libraries\STM32_EVAL\Common\fonts.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -597,6 +597,36 @@
               <FileName>util.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\User\util.h</FilePath>
+            </File>
+            <File>
+              <FileName>pictures.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\pictures.c</FilePath>
+            </File>
+            <File>
+              <FileName>pictures.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\User\pictures.h</FilePath>
+            </File>
+            <File>
+              <FileName>hw_config.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\hw_config.c</FilePath>
+            </File>
+            <File>
+              <FileName>menu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\menu.c</FilePath>
+            </File>
+            <File>
+              <FileName>hw_config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\User\hw_config.h</FilePath>
+            </File>
+            <File>
+              <FileName>menu.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\User\menu.h</FilePath>
             </File>
           </Files>
         </Group>

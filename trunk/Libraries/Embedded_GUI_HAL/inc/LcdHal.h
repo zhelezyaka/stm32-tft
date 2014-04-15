@@ -46,13 +46,16 @@
  #include "stm3210c_eval_lcd.h"
 #elif defined USE_STM32100E_EVAL
  #include "stm32HAL.h"
- #include "stm32100e_eval_lcd.h"
+ //#include "stm32100e_eval_lcd.h"
+ #include "reg.h"
+ #include "colors.h"
+ #include "ili9325.h"
 #elif defined (USE_STM322xG_EVAL)
  #include "stm32HAL.h"
  #include "stm322xg_eval_lcd.h"
 #elif defined (USE_STM32L152_EVAL)
  #include "stm32HAL.h"
- #include "stm32l152_eval_lcd.h"   
+ #include "stm32l152_eval_lcd.h"  
 #endif   
 
 #include "stm32_eval.h"

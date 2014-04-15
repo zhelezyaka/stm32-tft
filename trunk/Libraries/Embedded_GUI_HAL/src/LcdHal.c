@@ -52,8 +52,8 @@ typedef struct
 /* Note: LCD /CS is NE3 - Bank 3 of NOR/SRAM Bank 1~4 */
   #define GL_LCD_BASE ((uint32_t)(0x60000000 | 0x08000000))
 #elif USE_STM32100E_EVAL
-  /* Note: LCD /CS is CE4 - Bank 4 of NOR/SRAM Bank 1~4 */
-  #define GL_LCD_BASE           ((uint32_t)(0x60000000 | 0x0C000000))
+  /* Note: LCD /CS is CE1 - Bank 1 of NOR/SRAM Bank 1~4 */
+  #define GL_LCD_BASE           ((uint32_t)(0x60000000 | 0x60020000))
 #endif
 
 #define GL_LCD                ((__IO GL_LCD_TypeDef *) GL_LCD_BASE)
@@ -442,7 +442,8 @@ void GL_LCD_Init(void)
 #elif defined(USE_STM3210E_EVAL)
   STM3210E_LCD_Init();
 #elif defined(USE_STM32100E_EVAL)
-  STM32100E_LCD_Init();
+  //STM32100E_LCD_Init();
+    LCD_ILI9325_Init();
 #elif defined(USE_STM322xG_EVAL)
   STM322xG_LCD_Init();
 #elif defined(USE_STM32L152_EVAL)  
