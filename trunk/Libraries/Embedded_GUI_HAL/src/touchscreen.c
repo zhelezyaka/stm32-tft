@@ -114,7 +114,7 @@ void TS_Calibration(void)
   coordinate_Y1a = TSC_Value_Y;
 
   GL_Delay(90); /* This is to catch only one touch event */
-  TSC_Init();
+  //TSC_Init();
   touch_done = 0;
 
   GL_Clear(White);
@@ -127,7 +127,7 @@ void TS_Calibration(void)
   coordinate_Y2a = TSC_Value_Y;
 
   GL_Delay(90); /* This is to catch only one touch event */
-  TSC_Init();
+  //TSC_Init();
   touch_done = 0;
 
   GL_Clear(White);
@@ -140,7 +140,7 @@ void TS_Calibration(void)
   coordinate_Y3a = TSC_Value_Y;
 
   GL_Delay(90); /* This is to catch only one touch event */
-  TSC_Init();
+  //TSC_Init();
   touch_done = 0;
 
   GL_Clear(White);
@@ -153,7 +153,7 @@ void TS_Calibration(void)
   coordinate_Y4a = TSC_Value_Y;
 
   GL_Delay(90); /* This is to catch only one touch event */
-  TSC_Init();
+  //TSC_Init();
   touch_done = 0;
 
   GL_Clear(White);
@@ -166,7 +166,7 @@ void TS_Calibration(void)
   coordinate_Y5a = TSC_Value_Y;
 
   GL_Delay(90); /* This is to catch only one touch event */
-  TSC_Init();
+  //TSC_Init();
   touch_done = 0;
 
   GL_Clear(White);
@@ -179,7 +179,7 @@ void TS_Calibration(void)
   coordinate_Y1b = TSC_Value_Y;
 
   GL_Delay(90); /* This is to catch only one touch event */
-  TSC_Init();
+  //TSC_Init();
   touch_done = 0;
 
   GL_Clear(White);
@@ -192,7 +192,7 @@ void TS_Calibration(void)
   coordinate_Y2b = TSC_Value_Y;
 
   GL_Delay(90); /* This is to catch only one touch event */
-  TSC_Init();
+  //TSC_Init();
   touch_done = 0;
 
   GL_Clear(White);
@@ -205,7 +205,7 @@ void TS_Calibration(void)
   coordinate_Y3b = TSC_Value_Y;
 
   GL_Delay(90); /* This is to catch only one touch event */
-  TSC_Init();
+  //TSC_Init();
   touch_done = 0;
 
   GL_Clear(White);
@@ -218,7 +218,7 @@ void TS_Calibration(void)
   coordinate_Y4b = TSC_Value_Y;
 
   GL_Delay(90); /* This is to catch only one touch event */
-  TSC_Init();
+  //TSC_Init();
   touch_done = 0;
 
   GL_Clear(White);
@@ -231,7 +231,7 @@ void TS_Calibration(void)
   coordinate_Y5b = TSC_Value_Y;
 
   GL_Delay(90); /* This is to catch only one touch event */
-  TSC_Init();
+  //TSC_Init();
   touch_done = 0;
 
   /* Average between X and Y coupled Touchscreen values */

@@ -25,6 +25,8 @@
 /* Includes ---------------------------------------------------------------------------*/
 #include "TscHal.h"
 #include "touchscreen.h"
+//
+#include "xpt2046.h"
 
 #ifdef USE_STM3210C_EVAL
    #include "stm3210c_eval_ioe.h"
@@ -417,8 +419,12 @@ static void TSC_GPIO_Configuration(void)
 void TSC_Init(void)
 {
 #if TOUCH_SCREEN_CAPABILITY
-  /* Reset the STMPE811 using the serial communication interface */
+#ifdef USE_STM32100E_EVAL 
+    initSPI();
+#else
+    /* Reset the STMPE811 using the serial communication interface */
     IOE_Config();
+#endif
 #endif
 }
 
@@ -703,14 +709,35 @@ void Set_LastFlashMemoryAddress( uint32_t address)
   */
 void TSC_Read(void)
 {
+    int i;
 #if TOUCH_SCREEN_CAPABILITY
+    TSC_Value_X = 0x00;
+    TSC_Value_Y = 0x00;
+#ifdef USE_STM32100E_EVAL
+  if(GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_3)==Bit_RESET)
+	{
+	  GL_Delay(TOUCH_DELAY);
+		for( i = 0; i < 10; i++)
+		{
+	  	TSC_Value_X += readX();    
+	  	TSC_Value_Y += readY();
+		}
+		TSC_Value_X = TSC_Value_X/10;
+		TSC_Value_Y = TSC_Value_Y/10;
+	      
+	  u32_TSXCoordinate = getDisplayCoordinateX( TSC_Value_X, TSC_Value_Y );
+	  u32_TSYCoordinate = getDisplayCoordinateY( TSC_Value_X, TSC_Value_Y );
+	      
+		touch_done = 1;	
+	}
+#else
   TSC_Value_X = 0x00;
   TSC_Value_Y = 0x00;
   if((I2C_ReadDeviceRegister(pTscHwParam.TSC_DeviceRegister, GL_TSC_CTRL) & 0x80))
   {
       GL_Delay(TOUCH_DELAY);
 
-      /* Stop touchscreen controller */
+      //Stop touchscreen controller 
       I2C_WriteDeviceRegister(pTscHwParam.TSC_DeviceRegister, GL_TSC_CTRL, 0x00);
       
       TSC_Value_X = I2C_ReadDataBuffer(pTscHwParam.TSC_DeviceRegister, GL_TSC_DATA_Y);    
@@ -722,21 +749,21 @@ void TSC_Read(void)
       
       touch_done = 1;
       
-      /* Clear the interrupt pending bit and enable the FIFO again */
+      // Clear the interrupt pending bit and enable the FIFO again 
       I2C_WriteDeviceRegister(pTscHwParam.TSC_DeviceRegister, GL_FIFO_CTRL_STA, 0x01);
       I2C_WriteDeviceRegister(pTscHwParam.TSC_DeviceRegister, GL_INT_STA, IOE_TS_IT);
       I2C_WriteDeviceRegister(pTscHwParam.TSC_DeviceRegister, GL_FIFO_CTRL_STA, 0x00);      
       GL_Delay(0x02);
       
-      /* Enable touchscreen controller */
+      // Enable touchscreen controller 
       I2C_WriteDeviceRegister(pTscHwParam.TSC_DeviceRegister, GL_TSC_CTRL, 0x01);
       
       GL_Delay(0x05);
 
-      /* check if the FIFO is not empty */
+      // check if the FIFO is not empty 
       if(I2C_ReadDeviceRegister(pTscHwParam.TSC_DeviceRegister, GL_FIFO_CTRL_STA) != 0x20)
       {
-        /* Flush the FIFO */
+        // Flush the FIFO 
         I2C_WriteDeviceRegister(pTscHwParam.TSC_DeviceRegister, GL_FIFO_CTRL_STA, 0x01);
         I2C_WriteDeviceRegister(pTscHwParam.TSC_DeviceRegister, GL_FIFO_CTRL_STA, 0x00);
       }
@@ -745,6 +772,7 @@ void TSC_Read(void)
   {
     GL_Delay(1);
   }
+#endif
 #endif
 }
 
