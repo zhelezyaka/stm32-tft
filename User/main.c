@@ -1,6 +1,6 @@
 #include "stm32f10x.h"
 #include "ili9325.h"
-#include "xpt2406.h"
+#include "xpt2046.h"
 #include "util.h"
 #include "reg.h"
 #include "touchscreen.h"
@@ -23,6 +23,9 @@ STM32F103ZET6，ARM Cortex-M3内核，512kB Flash，64KB RAM，LQFP 144脚封装
 快速可嵌套中断，6~12个时钟周期
 具有MPU保护设定访问规则
 */
+
+//MARK:TI GUI
+
 #if defined(USE_STM32100E_EVAL)
 #define LAST_FLASH_MEMORY_ADDRESS	((uint32_t)0x08080000)
 #elif defined(USE_STM322xG_EVAL)
@@ -82,7 +85,7 @@ int main(void)
 
   /* Setup SysTick Timer for 10 msec interrupts  */
   RCC_GetClocksFreq(&RCC_Clocks);
-  if (SysTick_Config(RCC_Clocks.SYSCLK_Frequency / 100))
+  if (SysTick_Config(RCC_Clocks.SYSCLK_Frequency / 1000))
   {
     /* Capture error */
     while (1);

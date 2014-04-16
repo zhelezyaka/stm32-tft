@@ -1,4 +1,4 @@
-#include "xpt2406.h"
+#include "xpt2046.h"
 #include "stm32f10x.h"
 #include "util.h"
 #include "ili9325.h"
@@ -29,9 +29,9 @@ void initSPI()
     GPIO_SetBits(GPIOA, GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7); 
 
     //中断端口GPIO设置 PE3
-    //gpioTyp.GPIO_Pin = GPIO_Pin_3;
-    //gpioTyp.GPIO_Mode = GPIO_Mode_IPU; //上拉
-    //GPIO_Init(GPIOE, &gpioTyp);
+    gpioTyp.GPIO_Pin = GPIO_Pin_3;
+    gpioTyp.GPIO_Mode = GPIO_Mode_IN_FLOATING; 
+    GPIO_Init(GPIOE, &gpioTyp);
 
     //UNKNOWN ：NSS 初始化为推挽输出
     gpioTyp.GPIO_Pin = GPIO_Pin_4;
@@ -89,6 +89,7 @@ void initExti(void)
 	NVIC_Init(&nvicTyp);
 }
 
+/*
 void EXTI3_IRQHandler(void)
 {
     uint16_t x = 0, y = 0, xAd = 0, yAd = 0;
@@ -96,8 +97,8 @@ void EXTI3_IRQHandler(void)
 	if(EXTI_GetITStatus(EXTI_Line3)!= RESET)
     {
         //lcdClear(COLOR_BLUE);
-        readAdd(&xAd, &yAd);
-        getPos(xAd, yAd, &x, &y);
+        //readAdd(&xAd, &yAd);
+        //getPos(xAd, yAd, &x, &y);
         //itoa(x, chArr, 10);
         //lcdShowString(0, 0, chArr);
         //itoa(y, chArr, 10);
@@ -106,6 +107,7 @@ void EXTI3_IRQHandler(void)
     }
 	EXTI_ClearITPendingBit(EXTI_Line3);
 }
+*/
 
 u8 sendByte(u8 byte)
 {
@@ -130,9 +132,9 @@ u8 readByte(void)
 
 
 /* 等检测到触摸中断后调用此函数读取位置，读数正确返回1，否则返回0 */
-void readAdd(uint16_t *x, uint16_t *y)
+void readAdd(uint32_t *x, uint32_t *y)
 {
-    uint16_t temp;
+    uint32_t temp;
 
     GPIO_ResetBits(GPIOA, GPIO_Pin_4); // cs = 0
     //delay_ms(1);
@@ -162,6 +164,56 @@ void readAdd(uint16_t *x, uint16_t *y)
 
 }
 
+u16 readX(void)
+{
+    u16 xPos = 0, Temp = 0, Temp0 = 0, Temp1 = 0;
+
+    /* Select the TP: Chip Select low */
+    SPI_TOUCH_CS_LOW();
+    sysTickDelay(10);
+    /* Send Read xPos command */
+    sendByte( CMD_RDX ) ;
+    sysTickDelay(10);
+    /* Read a byte from the TP */
+    Temp0 = readByte();
+    sysTickDelay(10);  
+    /* Read a byte from the TP */
+    Temp1 = readByte();  
+    sysTickDelay(10);
+    /* Deselect the TP: Chip Select high */
+    SPI_TOUCH_CS_HIGH();
+
+    Temp = (Temp0 << 8) | Temp1; 
+
+    xPos = Temp>>3;
+
+    return xPos;
+}
+u16 readY(void)
+{
+    u16 yPos = 0, Temp = 0, Temp0 = 0, Temp1 = 0;
+
+    /* Select the TP: Chip Select low */
+    SPI_TOUCH_CS_LOW();
+    sysTickDelay(10);
+    /* Send Read xPos command */
+    sendByte( CMD_RDY ) ;
+    sysTickDelay(10);
+    /* Read a byte from the TP */
+    Temp0 = readByte();
+    sysTickDelay(10);  
+    /* Read a byte from the TP */
+    Temp1 = readByte();  
+    sysTickDelay(10);
+    /* Deselect the TP: Chip Select high */
+    SPI_TOUCH_CS_HIGH();
+
+    Temp = (Temp0 << 8) | Temp1; 
+
+    yPos = Temp>>3;
+
+    return yPos;
+}
 u8 getPos(uint16_t xAd, uint16_t yAd, uint16_t *x, uint16_t *y)
 {
     *x = xAd > chx ? ((u32)xAd - (u32)chx) * 1000 / vx : ((u32)chx - (u32)xAd) * 1000 / vx;
