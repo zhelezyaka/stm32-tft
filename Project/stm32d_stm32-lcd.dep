@@ -425,7 +425,7 @@ I (..\Libraries\Embedded_GUI_Library\inc\graphicObject.h)(0x534D5E59)
 F (..\Libraries\Embedded_GUI_Library\src\gl_fonts.c)(0x4E1D56EA)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork -I..\Libraries\CMSIS\CM3 -I..\Libraries\STM32F10x_StdPeriph_Driver\inc -I..\Libraries\Embedded_GUI_HAL\inc -I..\Libraries\Embedded_GUI_Library\inc -I..\User -I..\Libraries\STM32_EVAL -I..\Libraries\STM32_EVAL\STM32100E_EVAL -I..\Libraries\STM32_EVAL\Common-I D:\Prog\Keil\ARM\RV31\INC-I D:\Prog\Keil\ARM\CMSIS\Include-I D:\Prog\Keil\ARM\Inc\ST\STM32F10x-DUSE_STDPERIPH_DRIVER -DSTM32F10X_HD -DUSE_STM32100E_EVAL -o .\output\gl_fonts.o --omf_browse .\output\gl_fonts.crf --depend .\output\gl_fonts.d)
 I (..\Libraries\Embedded_GUI_Library\inc\gl_fonts.h)(0x4E1D56EA)
 I (D:\Prog\Keil\ARM\ARMCC\include\stdint.h)(0x51C7B744)
-F (..\Libraries\Embedded_GUI_Library\src\graphicObject.c)(0x534D5E4A)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork -I..\Libraries\CMSIS\CM3 -I..\Libraries\STM32F10x_StdPeriph_Driver\inc -I..\Libraries\Embedded_GUI_HAL\inc -I..\Libraries\Embedded_GUI_Library\inc -I..\User -I..\Libraries\STM32_EVAL -I..\Libraries\STM32_EVAL\STM32100E_EVAL -I..\Libraries\STM32_EVAL\Common-I D:\Prog\Keil\ARM\RV31\INC-I D:\Prog\Keil\ARM\CMSIS\Include-I D:\Prog\Keil\ARM\Inc\ST\STM32F10x-DUSE_STDPERIPH_DRIVER -DSTM32F10X_HD -DUSE_STM32100E_EVAL -o .\output\graphicobject.o --omf_browse .\output\graphicobject.crf --depend .\output\graphicobject.d)
+F (..\Libraries\Embedded_GUI_Library\src\graphicObject.c)(0x5352B511)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork -I..\Libraries\CMSIS\CM3 -I..\Libraries\STM32F10x_StdPeriph_Driver\inc -I..\Libraries\Embedded_GUI_HAL\inc -I..\Libraries\Embedded_GUI_Library\inc -I..\User -I..\Libraries\STM32_EVAL -I..\Libraries\STM32_EVAL\STM32100E_EVAL -I..\Libraries\STM32_EVAL\Common-I D:\Prog\Keil\ARM\RV31\INC-I D:\Prog\Keil\ARM\CMSIS\Include-I D:\Prog\Keil\ARM\Inc\ST\STM32F10x-DUSE_STDPERIPH_DRIVER -DSTM32F10X_HD -DUSE_STM32100E_EVAL -o .\output\graphicobject.o --omf_browse .\output\graphicobject.crf --depend .\output\graphicobject.d)
 I (..\Libraries\Embedded_GUI_Library\inc\graphicObject.h)(0x534D5E59)
 I (..\Libraries\Embedded_GUI_Library\inc\graphicObjectTypes.h)(0x4E1D56EA)
 I (..\Libraries\Embedded_GUI_HAL\inc\stm32HAL.h)(0x4E1D56EA)
@@ -624,7 +624,7 @@ I (..\User\fonts.h)(0x4D91975E)
 I (..\User\util.h)(0x534C004A)
 I (..\Libraries\STM32_EVAL\stm32_eval.h)(0x4E1D56FA)
 I (..\Libraries\STM32_EVAL\stm32100e_eval/stm32100e_eval.h)(0x4E1D56FC)
-F (..\Libraries\Embedded_GUI_HAL\src\TscHal.c)(0x534EA8B5)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork -I..\Libraries\CMSIS\CM3 -I..\Libraries\STM32F10x_StdPeriph_Driver\inc -I..\Libraries\Embedded_GUI_HAL\inc -I..\Libraries\Embedded_GUI_Library\inc -I..\User -I..\Libraries\STM32_EVAL -I..\Libraries\STM32_EVAL\STM32100E_EVAL -I..\Libraries\STM32_EVAL\Common-I D:\Prog\Keil\ARM\RV31\INC-I D:\Prog\Keil\ARM\CMSIS\Include-I D:\Prog\Keil\ARM\Inc\ST\STM32F10x-DUSE_STDPERIPH_DRIVER -DSTM32F10X_HD -DUSE_STM32100E_EVAL -o .\output\tschal.o --omf_browse .\output\tschal.crf --depend .\output\tschal.d)
+F (..\Libraries\Embedded_GUI_HAL\src\TscHal.c)(0x53514FCE)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork -I..\Libraries\CMSIS\CM3 -I..\Libraries\STM32F10x_StdPeriph_Driver\inc -I..\Libraries\Embedded_GUI_HAL\inc -I..\Libraries\Embedded_GUI_Library\inc -I..\User -I..\Libraries\STM32_EVAL -I..\Libraries\STM32_EVAL\STM32100E_EVAL -I..\Libraries\STM32_EVAL\Common-I D:\Prog\Keil\ARM\RV31\INC-I D:\Prog\Keil\ARM\CMSIS\Include-I D:\Prog\Keil\ARM\Inc\ST\STM32F10x-DUSE_STDPERIPH_DRIVER -DSTM32F10X_HD -DUSE_STM32100E_EVAL -o .\output\tschal.o --omf_browse .\output\tschal.crf --depend .\output\tschal.d)
 I (..\Libraries\Embedded_GUI_HAL\inc\TscHal.h)(0x534E99C9)
 I (..\Libraries\Embedded_GUI_HAL\inc\stm32HAL.h)(0x4E1D56EA)
 I (..\Libraries\CMSIS\CM3\stm32f10x.h)(0x4E1D56E6)
@@ -657,7 +657,10 @@ I (..\Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_wwdg.h)(0x4E1D56EA)
 I (..\Libraries\STM32F10x_StdPeriph_Driver\inc\misc.h)(0x4E1D56EA)
 I (..\Libraries\Embedded_GUI_Library\inc\graphicObjectTypes.h)(0x4E1D56EA)
 I (..\Libraries\Embedded_GUI_HAL\inc\touchscreen.h)(0x4E1D56EA)
-I (..\User\xpt2046.h)(0x534EA6D1)
+I (..\User\xpt2046.h)(0x534EB896)
+I (..\Libraries\Embedded_GUI_HAL\inc\JoyHal.h)(0x4E1D56EA)
+I (..\Libraries\Embedded_GUI_Library\inc\cursor.h)(0x4E1D56EA)
+I (..\Libraries\Embedded_GUI_Library\inc\graphicObject.h)(0x534D5E59)
 I (..\Libraries\STM32_EVAL\STM32100E_EVAL\stm32100e_eval_ioe.h)(0x4E1D56FC)
 F (..\Libraries\Embedded_GUI_HAL\inc\JoyHal.h)(0x4E1D56EA)()
 F (..\Libraries\Embedded_GUI_HAL\inc\LcdHal.h)(0x534D58BB)()
@@ -819,7 +822,7 @@ I (..\Libraries\STM32F10x_StdPeriph_Driver\inc\misc.h)(0x4E1D56EA)
 F (..\Libraries\STM32_EVAL\Common\fonts.c)(0x4E1D56FA)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork -I..\Libraries\CMSIS\CM3 -I..\Libraries\STM32F10x_StdPeriph_Driver\inc -I..\Libraries\Embedded_GUI_HAL\inc -I..\Libraries\Embedded_GUI_Library\inc -I..\User -I..\Libraries\STM32_EVAL -I..\Libraries\STM32_EVAL\STM32100E_EVAL -I..\Libraries\STM32_EVAL\Common-I D:\Prog\Keil\ARM\RV31\INC-I D:\Prog\Keil\ARM\CMSIS\Include-I D:\Prog\Keil\ARM\Inc\ST\STM32F10x-DUSE_STDPERIPH_DRIVER -DSTM32F10X_HD -DUSE_STM32100E_EVAL -o .\output\fonts.o --omf_browse .\output\fonts.crf --depend .\output\fonts.d)
 I (..\Libraries\STM32_EVAL\Common\fonts.h)(0x4E1D56FA)
 I (D:\Prog\Keil\ARM\ARMCC\include\stdint.h)(0x51C7B744)
-F (..\User\main.c)(0x534EB07A)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork -I..\Libraries\CMSIS\CM3 -I..\Libraries\STM32F10x_StdPeriph_Driver\inc -I..\Libraries\Embedded_GUI_HAL\inc -I..\Libraries\Embedded_GUI_Library\inc -I..\User -I..\Libraries\STM32_EVAL -I..\Libraries\STM32_EVAL\STM32100E_EVAL -I..\Libraries\STM32_EVAL\Common-I D:\Prog\Keil\ARM\RV31\INC-I D:\Prog\Keil\ARM\CMSIS\Include-I D:\Prog\Keil\ARM\Inc\ST\STM32F10x-DUSE_STDPERIPH_DRIVER -DSTM32F10X_HD -DUSE_STM32100E_EVAL -o .\output\main.o --omf_browse .\output\main.crf --depend .\output\main.d)
+F (..\User\main.c)(0x5352B428)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork -I..\Libraries\CMSIS\CM3 -I..\Libraries\STM32F10x_StdPeriph_Driver\inc -I..\Libraries\Embedded_GUI_HAL\inc -I..\Libraries\Embedded_GUI_Library\inc -I..\User -I..\Libraries\STM32_EVAL -I..\Libraries\STM32_EVAL\STM32100E_EVAL -I..\Libraries\STM32_EVAL\Common-I D:\Prog\Keil\ARM\RV31\INC-I D:\Prog\Keil\ARM\CMSIS\Include-I D:\Prog\Keil\ARM\Inc\ST\STM32F10x-DUSE_STDPERIPH_DRIVER -DSTM32F10X_HD -DUSE_STM32100E_EVAL -o .\output\main.o --omf_browse .\output\main.crf --depend .\output\main.d)
 I (..\Libraries\CMSIS\CM3\stm32f10x.h)(0x4E1D56E6)
 I (..\Libraries\CMSIS\CM3\core_cm3.h)(0x4E1D56E6)
 I (D:\Prog\Keil\ARM\ARMCC\include\stdint.h)(0x51C7B744)
@@ -852,7 +855,7 @@ I (..\User\ili9325.h)(0x534D5A21)
 I (..\User\colors.h)(0x534D58FE)
 I (..\User\fonts.h)(0x4D91975E)
 I (..\User\util.h)(0x534C004A)
-I (..\User\xpt2046.h)(0x534EA6D1)
+I (..\User\xpt2046.h)(0x534EB896)
 I (..\User\reg.h)(0x534C1804)
 I (..\Libraries\Embedded_GUI_HAL\inc\touchscreen.h)(0x4E1D56EA)
 I (..\Libraries\Embedded_GUI_HAL\inc\stm32HAL.h)(0x4E1D56EA)
@@ -1029,7 +1032,7 @@ I (..\Libraries\Embedded_GUI_Library\inc\graphicObject.h)(0x534D5E59)
 I (..\User\pictures.h)(0x4E1D56EE)
 F (..\User\hw_config.h)(0x4E1D56EE)()
 F (..\User\menu.h)(0x4E1D56EE)()
-F (..\User\ili9325.c)(0x534D5A14)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork -I..\Libraries\CMSIS\CM3 -I..\Libraries\STM32F10x_StdPeriph_Driver\inc -I..\Libraries\Embedded_GUI_HAL\inc -I..\Libraries\Embedded_GUI_Library\inc -I..\User -I..\Libraries\STM32_EVAL -I..\Libraries\STM32_EVAL\STM32100E_EVAL -I..\Libraries\STM32_EVAL\Common-I D:\Prog\Keil\ARM\RV31\INC-I D:\Prog\Keil\ARM\CMSIS\Include-I D:\Prog\Keil\ARM\Inc\ST\STM32F10x-DUSE_STDPERIPH_DRIVER -DSTM32F10X_HD -DUSE_STM32100E_EVAL -o .\output\ili9325.o --omf_browse .\output\ili9325.crf --depend .\output\ili9325.d)
+F (..\User\ili9325.c)(0x53514076)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork -I..\Libraries\CMSIS\CM3 -I..\Libraries\STM32F10x_StdPeriph_Driver\inc -I..\Libraries\Embedded_GUI_HAL\inc -I..\Libraries\Embedded_GUI_Library\inc -I..\User -I..\Libraries\STM32_EVAL -I..\Libraries\STM32_EVAL\STM32100E_EVAL -I..\Libraries\STM32_EVAL\Common-I D:\Prog\Keil\ARM\RV31\INC-I D:\Prog\Keil\ARM\CMSIS\Include-I D:\Prog\Keil\ARM\Inc\ST\STM32F10x-DUSE_STDPERIPH_DRIVER -DSTM32F10X_HD -DUSE_STM32100E_EVAL -o .\output\ili9325.o --omf_browse .\output\ili9325.crf --depend .\output\ili9325.d)
 I (..\Libraries\CMSIS\CM3\stm32f10x.h)(0x4E1D56E6)
 I (..\Libraries\CMSIS\CM3\core_cm3.h)(0x4E1D56E6)
 I (D:\Prog\Keil\ARM\ARMCC\include\stdint.h)(0x51C7B744)
@@ -1066,8 +1069,8 @@ I (..\User\reg.h)(0x534C1804)
 F (..\User\ili9325.h)(0x534D5A21)()
 F (..\User\colors.h)(0x534D58FE)()
 F (..\User\reg.h)(0x534C1804)()
-F (..\User\xpt2046.c)(0x534EA938)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork -I..\Libraries\CMSIS\CM3 -I..\Libraries\STM32F10x_StdPeriph_Driver\inc -I..\Libraries\Embedded_GUI_HAL\inc -I..\Libraries\Embedded_GUI_Library\inc -I..\User -I..\Libraries\STM32_EVAL -I..\Libraries\STM32_EVAL\STM32100E_EVAL -I..\Libraries\STM32_EVAL\Common-I D:\Prog\Keil\ARM\RV31\INC-I D:\Prog\Keil\ARM\CMSIS\Include-I D:\Prog\Keil\ARM\Inc\ST\STM32F10x-DUSE_STDPERIPH_DRIVER -DSTM32F10X_HD -DUSE_STM32100E_EVAL -o .\output\xpt2046.o --omf_browse .\output\xpt2046.crf --depend .\output\xpt2046.d)
-I (..\User\xpt2046.h)(0x534EA6D1)
+F (..\User\xpt2046.c)(0x535005CA)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork -I..\Libraries\CMSIS\CM3 -I..\Libraries\STM32F10x_StdPeriph_Driver\inc -I..\Libraries\Embedded_GUI_HAL\inc -I..\Libraries\Embedded_GUI_Library\inc -I..\User -I..\Libraries\STM32_EVAL -I..\Libraries\STM32_EVAL\STM32100E_EVAL -I..\Libraries\STM32_EVAL\Common-I D:\Prog\Keil\ARM\RV31\INC-I D:\Prog\Keil\ARM\CMSIS\Include-I D:\Prog\Keil\ARM\Inc\ST\STM32F10x-DUSE_STDPERIPH_DRIVER -DSTM32F10X_HD -DUSE_STM32100E_EVAL -o .\output\xpt2046.o --omf_browse .\output\xpt2046.crf --depend .\output\xpt2046.d)
+I (..\User\xpt2046.h)(0x534EB896)
 I (..\Libraries\CMSIS\CM3\stm32f10x.h)(0x4E1D56E6)
 I (..\Libraries\CMSIS\CM3\core_cm3.h)(0x4E1D56E6)
 I (D:\Prog\Keil\ARM\ARMCC\include\stdint.h)(0x51C7B744)
@@ -1100,4 +1103,4 @@ I (..\User\util.h)(0x534C004A)
 I (..\User\ili9325.h)(0x534D5A21)
 I (..\User\colors.h)(0x534D58FE)
 I (..\User\fonts.h)(0x4D91975E)
-F (..\User\xpt2046.h)(0x534EA6D1)()
+F (..\User\xpt2046.h)(0x534EB896)()

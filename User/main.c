@@ -24,7 +24,38 @@ STM32F103ZET6，ARM Cortex-M3内核，512kB Flash，64KB RAM，LQFP 144脚封装
 具有MPU保护设定访问规则
 */
 
+/*
+在触摸屏数据与其位置偏移关系且屏幕像素与其位置偏移关系同为线性关系假设情况下，触摸屏返回的位置信息与像素位置信息之间成2D坐标变换关系。则对于触摸屏按下点的触摸屏坐标(Tx,Ty)与其在显示设备位置关系上匹配的点的屏幕坐标(Sx,Sy)之间的转换关系，可以通过下述坐标变换表示：
+Sx = A1*Tx + B1*Ty + C1
+Sy = A2*Tx + B2*Ty + C2
+*/
+
 //MARK:TI GUI
+
+GL_Page_TypeDef *pageTest;
+void BtnClick(void)
+{
+    GL_Clear(Blue);
+}
+void testBtn(void)
+{
+  GL_PageControls_TypeDef* DemoBtn;
+
+
+  /* ************** GRAPHIC LIBRARY - PAGE 0 ************** */
+  pageTest = malloc(sizeof(GL_Page_TypeDef));
+  Create_PageObj( pageTest );
+
+  DemoBtn = NewButton( 1, (uint8_t*)"DEMO", BtnClick );
+  AddPageControlObj( 100, 20, DemoBtn, pageTest );
+  
+  GL_Clear(White);
+  GL_SetTextColor(GL_Blue);
+  GL_DrawLine(20,100, 26, Vertical);
+    GL_DrawLine(20,100, 40, Horizontal);
+  pageTest->ShowPage( pageTest, GL_TRUE );
+}
+
 
 #if defined(USE_STM32100E_EVAL)
 #define LAST_FLASH_MEMORY_ADDRESS	((uint32_t)0x08080000)
@@ -40,35 +71,6 @@ void InputInterface_Init(void);
 void ShowLoadingLogo(void);
 void CatchInputEvents(void);
 
-/*int main(void)
-{
-    SystemInit();
-    SysTick_Config(SystemCoreClock /1000);
-    Led_GPIO_Configuration();
-    LCD_ILI9325_Init();
-    LCD_LightOn();
-    LCD_Clear(LCD_COLOR_YELLOW);
-    LCD_DrawCircle(50, 50, 20);
-    LCD_DisplayChar(100, 100, 'R');
-    LCD_DrawUniLine(0, 0, 240, 320);
-    LCD_DisplayStringLine(1, "Hello!");
-    while (1)
-	{
-		GPIO_SetBits(GPIOC, GPIO_Pin_13);
-        sysTickDelay(1000);
-        GPIO_ResetBits(GPIOC, GPIO_Pin_13);
-        sysTickDelay(1000);
-        sysTickDelay(1000);
-    }
-    
-    GL_LCD_Init();
-    GL_Clear(GL_White);
-    ShowLoadingLogo();
-    while(1)
-    {
-        sysTickDelay(100);
-    }
-}*/
 
 /**
   * @brief  Main program.
@@ -120,8 +122,12 @@ int main(void)
 
   /* Menu Initialisation*/
   Show_HomeScreen();
+  //testBtn();
+  
   CursorShow(195, 80);
 
+  
+  //tmpSize = GetObjSize(PagesList[0]->PageControls[0]);
   /* Infinite main loop ------------------------------------------------------*/
   while (1)
   {
@@ -173,7 +179,7 @@ void CatchInputEvents(void)
   CursorReadJoystick(IOEXP_MODE);
 #else
   /* Use IO polling */
-  CursorReadJoystick(POLLING_MODE);
+  //CursorReadJoystick(POLLING_MODE);
 #endif
 }
 

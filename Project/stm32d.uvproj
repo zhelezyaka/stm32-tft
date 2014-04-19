@@ -503,6 +503,31 @@
               <FileType>1</FileType>
               <FilePath>..\Libraries\Embedded_GUI_Library\src\images.c</FilePath>
             </File>
+            <File>
+              <FileName>cursor.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Libraries\Embedded_GUI_Library\inc\cursor.h</FilePath>
+            </File>
+            <File>
+              <FileName>gl_fonts.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Libraries\Embedded_GUI_Library\inc\gl_fonts.h</FilePath>
+            </File>
+            <File>
+              <FileName>graphicObject.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Libraries\Embedded_GUI_Library\inc\graphicObject.h</FilePath>
+            </File>
+            <File>
+              <FileName>graphicObjectTypes.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Libraries\Embedded_GUI_Library\inc\graphicObjectTypes.h</FilePath>
+            </File>
+            <File>
+              <FileName>images.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Libraries\Embedded_GUI_Library\inc\images.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -527,6 +552,31 @@
               <FileName>TscHal.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Libraries\Embedded_GUI_HAL\src\TscHal.c</FilePath>
+            </File>
+            <File>
+              <FileName>JoyHal.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Libraries\Embedded_GUI_HAL\inc\JoyHal.h</FilePath>
+            </File>
+            <File>
+              <FileName>LcdHal.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Libraries\Embedded_GUI_HAL\inc\LcdHal.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32HAL.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Libraries\Embedded_GUI_HAL\inc\stm32HAL.h</FilePath>
+            </File>
+            <File>
+              <FileName>touchscreen.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Libraries\Embedded_GUI_HAL\inc\touchscreen.h</FilePath>
+            </File>
+            <File>
+              <FileName>TscHal.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Libraries\Embedded_GUI_HAL\inc\TscHal.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -659,14 +709,14 @@
           <GroupName>Touch</GroupName>
           <Files>
             <File>
-              <FileName>xpt2406.c</FileName>
+              <FileName>xpt2046.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\User\xpt2406.c</FilePath>
+              <FilePath>..\User\xpt2046.c</FilePath>
             </File>
             <File>
-              <FileName>xpt2406.h</FileName>
+              <FileName>xpt2046.h</FileName>
               <FileType>5</FileType>
-              <FilePath>..\User\xpt2406.h</FilePath>
+              <FilePath>..\User\xpt2046.h</FilePath>
             </File>
           </Files>
         </Group>

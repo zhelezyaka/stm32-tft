@@ -170,16 +170,16 @@ u16 readX(void)
 
     /* Select the TP: Chip Select low */
     SPI_TOUCH_CS_LOW();
-    sysTickDelay(10);
+    //sysTickDelay(10);
     /* Send Read xPos command */
     sendByte( CMD_RDX ) ;
-    sysTickDelay(10);
+    //sysTickDelay(10);
     /* Read a byte from the TP */
     Temp0 = readByte();
-    sysTickDelay(10);  
+    //sysTickDelay(10);  
     /* Read a byte from the TP */
     Temp1 = readByte();  
-    sysTickDelay(10);
+    //sysTickDelay(10);
     /* Deselect the TP: Chip Select high */
     SPI_TOUCH_CS_HIGH();
 
@@ -195,16 +195,16 @@ u16 readY(void)
 
     /* Select the TP: Chip Select low */
     SPI_TOUCH_CS_LOW();
-    sysTickDelay(10);
+    //sysTickDelay(10);
     /* Send Read xPos command */
     sendByte( CMD_RDY ) ;
-    sysTickDelay(10);
+    //sysTickDelay(10);
     /* Read a byte from the TP */
     Temp0 = readByte();
-    sysTickDelay(10);  
+    //sysTickDelay(10);  
     /* Read a byte from the TP */
     Temp1 = readByte();  
-    sysTickDelay(10);
+    //sysTickDelay(10);
     /* Deselect the TP: Chip Select high */
     SPI_TOUCH_CS_HIGH();
 

@@ -4,7 +4,7 @@
 #include "stm32f10x.h"
 
 #define TSC2046_GetCounts	10		/* 每次采集的次数，取其平均值 */
-#define  CMD_RDX  0xD0	 //触摸IC读坐标积存器
+#define  CMD_RDX  0xD0	            //触摸IC读坐标积存器
 #define  CMD_RDY  0x90
 
 #define SPI_TOUCH_CS_LOW()       GPIO_ResetBits(GPIOA, GPIO_Pin_4)
