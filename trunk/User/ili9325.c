@@ -96,15 +96,15 @@ void LCD_ILI9325_Init(void)
         LCD_WriteReg(LCD_REG_17, 0x0000); /* DC1[2:0], DC0[2:0], VC[2:0] */
         LCD_WriteReg(LCD_REG_18, 0x0000); /* VREG1OUT voltage */
         LCD_WriteReg(LCD_REG_19, 0x0000); /* VDV[4:0] for VCOM amplitude */
-        _delay_(20);                     /* Dis-charge capacitor power voltage (200ms) */
+        _delay_(20);                      /* Dis-charge capacitor power voltage (200ms) */
         LCD_WriteReg(LCD_REG_16, 0x17B0); /* SAP, BT[3:0], AP, DSTB, SLP, STB */
         LCD_WriteReg(LCD_REG_17, 0x0137); /* DC1[2:0], DC0[2:0], VC[2:0] */
-        _delay_(5);                      /* Delay 50 ms */
+        _delay_(5);                       /* Delay 50 ms */
         LCD_WriteReg(LCD_REG_18, 0x0139); /* VREG1OUT voltage */
-        _delay_(5);                      /* Delay 50 ms */
+        _delay_(5);                       /* Delay 50 ms */
         LCD_WriteReg(LCD_REG_19, 0x1d00); /* VDV[4:0] for VCOM amplitude */
         LCD_WriteReg(LCD_REG_41, 0x0013); /* VCM[4:0] for VCOMH */
-        _delay_(5);                      /* Delay 50 ms */
+        _delay_(5);                       /* Delay 50 ms */
         LCD_WriteReg(LCD_REG_32, 0x0000); /* GRAM horizontal Address */
         LCD_WriteReg(LCD_REG_33, 0x0000); /* GRAM Vertical Address */
 

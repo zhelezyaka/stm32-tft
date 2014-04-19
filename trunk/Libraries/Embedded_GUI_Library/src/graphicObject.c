@@ -4020,6 +4020,7 @@ void ProcessInputData(void)
             if (touch_done)
             {
               if ( CompareCoordinates( tmpCoord.MaxX, tmpCoord.MaxX - tmpSize.Length + 1, tmpCoord.MaxY, tmpCoord.MaxY - tmpSize.Height ) )
+              //if ( CompareCoordinates( tmpCoord.MaxY, tmpCoord.MaxY - tmpSize.Height + 1, tmpCoord.MaxX, tmpCoord.MaxX - tmpSize.Length ) )
               {
                 CursorDraw(Cursor->X, Cursor->Y, CUR_DRAW_BEH);
                 CallPreEvents(PagesList[p_index]->PageControls[c_index]);

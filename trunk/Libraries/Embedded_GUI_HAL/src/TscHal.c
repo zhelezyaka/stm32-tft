@@ -27,6 +27,9 @@
 #include "touchscreen.h"
 //
 #include "xpt2046.h"
+#include "JoyHal.h"
+#include "cursor.h"
+
 
 #ifdef USE_STM3210C_EVAL
    #include "stm3210c_eval_ioe.h"
@@ -710,26 +713,29 @@ void Set_LastFlashMemoryAddress( uint32_t address)
 void TSC_Read(void)
 {
     int i;
+    //temp:
+    //uint16_t mx, my;
 #if TOUCH_SCREEN_CAPABILITY
     TSC_Value_X = 0x00;
     TSC_Value_Y = 0x00;
 #ifdef USE_STM32100E_EVAL
-  if(GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_3)==Bit_RESET)
-	{
-	  GL_Delay(TOUCH_DELAY);
-		for( i = 0; i < 10; i++)
-		{
-	  	TSC_Value_X += readX();    
-	  	TSC_Value_Y += readY();
-		}
-		TSC_Value_X = TSC_Value_X/10;
-		TSC_Value_Y = TSC_Value_Y/10;
-	      
-	  u32_TSXCoordinate = getDisplayCoordinateX( TSC_Value_X, TSC_Value_Y );
-	  u32_TSYCoordinate = getDisplayCoordinateY( TSC_Value_X, TSC_Value_Y );
-	      
-		touch_done = 1;	
-	}
+    if(GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_3)==Bit_RESET)
+    {
+        GL_Delay(TOUCH_DELAY);
+        for( i = 0; i < 10; i++)
+        {
+            TSC_Value_X += readX();    
+            TSC_Value_Y += readY();
+        }
+        TSC_Value_X = TSC_Value_X/10;
+        TSC_Value_Y = TSC_Value_Y/10;
+          
+        //DEBUG:
+        //getPos(TSC_Value_X, TSC_Value_Y, &mx, &my);
+        u32_TSXCoordinate = getDisplayCoordinateX( TSC_Value_X, TSC_Value_Y );
+        u32_TSYCoordinate = getDisplayCoordinateY( TSC_Value_X, TSC_Value_Y );        
+        touch_done = 1;	
+    }
 #else
   TSC_Value_X = 0x00;
   TSC_Value_Y = 0x00;
